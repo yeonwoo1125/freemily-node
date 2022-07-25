@@ -1,5 +1,4 @@
 const Groups = require('../models/group');
-const {d} = require("nunjucks/src/filters");
 const router = require('express').Router();
 
 //그룹 생성
@@ -9,7 +8,6 @@ router.post('/',async (req, res, next)=>{
             group_name : req.body.group_name,
             group_invite_code : createGroupInviteCode(),
         });
-        console.log("g",group.group_id);
         res.status(201).json(group);
     }catch (err){
         console.error(err);
