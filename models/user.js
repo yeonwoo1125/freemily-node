@@ -36,7 +36,12 @@ class User extends Sequelize.Model {
                 tableName : 'user_tb',
                 modelName : 'User',
                 charset : 'utf8',
-                collate : 'utf8_general_ci'
+                collate : 'utf8_general_ci',
+                defaultScope : {
+                    where : {
+                        user_id : true
+                    }
+                }
             }
         );
     }

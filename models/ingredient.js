@@ -45,7 +45,12 @@ class Ingredient extends Sequelize.Model {
                 tableName : 'ingredient_tb',
                 modelName : 'Ingredient',
                 charset : 'utf8',
-                collate : 'utf8_general_ci'
+                collate : 'utf8_general_ci',
+                defaultScope : {
+                    where : {
+                        ingredient_id : true
+                    }
+                }
             }
         );
     }

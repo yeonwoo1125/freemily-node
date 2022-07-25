@@ -30,7 +30,13 @@ class Group extends Sequelize.Model {
                 tableName : 'group_tb',
                 modelName : 'Group',
                 charset : 'utf8',
-                collate : 'utf8_general_ci'
+                collate : 'utf8_general_ci',
+                defaultScope : {
+                    where : {
+                        group_invite_code : true,
+                        group_id :  true
+                    }
+                }
             }
         );
     }
