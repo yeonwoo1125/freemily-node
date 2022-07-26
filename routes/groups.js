@@ -1,14 +1,38 @@
 const Groups = require('../models/group');
+const Users = require('../models/user');
+const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
 
 //그룹 생성
-router.post('/',async (req, res, next)=>{
+router.post('/:user_id',[
+        check("groupName", "group name is too short").trim().isLength({min : 4}),
+        check("groupName", "group name is empty").trim().not().isEmpty()
+    ],
+    async (req, res, next)=>{
+
+    const error = validationResult(req);
+    if(validRequest(error)){
+        console.log(error);
+        return res.status(409).send({
+            message : 'request 형식이 옳지 않습니다.',
+        });
+    }
+
+    const user_id = req.params.user_id*1;
+    if(!findByUserId(user_id)){
+        return res.status(404).send({
+            message : '해당하는 유저가 존재하지 않습니다.'
+        });
+    }
+
     try {
         const group = await Groups.create({
-            group_name : req.body.group_name,
+            group_name : req.body.groupName,
             group_invite_code : createGroupInviteCode(),
         });
-        res.status(201).json(group);
+        const user = getUser(user_id)
+        console.log(user);
+        return res.status(201).json(group);
     }catch (err){
         console.error(err);
         next(err);
@@ -38,6 +62,25 @@ const findByInviteCode = (code) =>{
     Groups.findByPk(code).then(data=>{
         return data !== null;
     });
+    return false;
+}
+
+const findByUserId = (id) => {
+    Users.findByPk(id).then(data => {
+        return data !== null;
+    });
+    return false;
+}
+
+const getUser = (user_id)=>{
+    return Users.findByPk(user_id).then(data => {
+        console.log(data);
+    }).catch(err=>{
+        console.error(err);
+    })
+}
+const validRequest = (error) => {
+    return !error.isEmpty();
 }
 
 module.exports = router;
