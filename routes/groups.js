@@ -4,40 +4,42 @@ const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
 
 //그룹 생성
-router.post('/:user_id',[
-        check("groupName", "group name is too short").trim().isLength({min : 4}),
+router.post('/:user_id', [
+        check("groupName", "group name is too short").trim().isLength({min: 4}),
         check("groupName", "group name is empty").trim().not().isEmpty()
     ],
-    async (req, res, next)=>{
+    async (req, res, next) => {
 
-    const error = validationResult(req);
-    if(validRequest(error)){
-        console.log(error);
-        return res.status(409).send({
-            message : 'request 형식이 옳지 않습니다.',
-        });
-    }
+        const error = validationResult(req);
+        if (validRequest(error)) {
+            console.log(error);
+            return res.status(409).send({
+                message: 'request 형식이 옳지 않습니다.',
+            });
+        }
 
-    const user_id = req.params.user_id*1;
-    if(!findByUserId(user_id)){
-        return res.status(404).send({
-            message : '해당하는 유저가 존재하지 않습니다.'
-        });
-    }
+        const user_id = req.params.user_id * 1;
+        if (findByUserId(user_id)) {
+            return res.status(404).send({
+                message: '해당하는 유저가 존재하지 않습니다.'
+            });
+        }
 
-    try {
-        const group = await Groups.create({
-            group_name : req.body.groupName,
-            group_invite_code : createGroupInviteCode(),
-        });
-        const user = getUser(user_id)
-        console.log(user);
-        return res.status(201).json(group);
-    }catch (err){
-        console.error(err);
-        next(err);
-    }
-});
+        try {
+            const group = await Groups.create({
+                group_name: req.body.groupName,
+                group_invite_code: createGroupInviteCode(),
+            });
+            await Users.update(
+                {group_id: group.group_id},
+                {where: {user_id: user_id}, returning: true});
+
+            return res.status(201).json(group);
+        } catch (err) {
+            console.error(err);
+            next(err);
+        }
+    });
 
 const createGroupInviteCode = () => {
     const chs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -49,17 +51,17 @@ const createGroupInviteCode = () => {
 
     do {
         let code = '';
-        for(let i=0; i<7; i++){
-            let c = chs[Math.floor(Math.random()*chs.length)];
-            code+=c;
+        for (let i = 0; i < 7; i++) {
+            let c = chs[Math.floor(Math.random() * chs.length)];
+            code += c;
         }
         ranCode = code;
-    }while((findByInviteCode(ranCode)));
+    } while ((findByInviteCode(ranCode)));
     return ranCode;
 }
 
-const findByInviteCode = (code) =>{
-    Groups.findByPk(code).then(data=>{
+const findByInviteCode = (code) => {
+    Groups.findByPk(code).then(data => {
         return data !== null;
     });
     return false;
@@ -72,13 +74,6 @@ const findByUserId = (id) => {
     return false;
 }
 
-const getUser = (user_id)=>{
-    return Users.findByPk(user_id).then(data => {
-        console.log(data);
-    }).catch(err=>{
-        console.error(err);
-    })
-}
 const validRequest = (error) => {
     return !error.isEmpty();
 }
