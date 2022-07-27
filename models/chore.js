@@ -34,12 +34,7 @@ class Chore extends Sequelize.Model {
                 tableName : 'chore_tb',
                 modelName : 'Chore',
                 charset : 'utf8',
-                collate : 'utf8_general_ci',
-                defaultScope : {
-                    where : {
-                        chore_id : true
-                    }
-                }
+                collate : 'utf8_general_ci'
             }
         );
     }

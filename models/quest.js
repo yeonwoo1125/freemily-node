@@ -35,12 +35,7 @@ class Quest extends Sequelize.Model {
                 tableName : 'quest_tb',
                 modelName : 'Quest',
                 charset : 'utf8',
-                collate : 'utf8_general_ci',
-                defaultScope : {
-                    where : {
-                        quest_id : true
-                    }
-                }
+                collate : 'utf8_general_ci'
             }
         );
     }
