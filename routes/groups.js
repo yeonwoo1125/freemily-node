@@ -5,21 +5,20 @@ const router = require('express').Router();
 
 //그룹 생성
 router.post('/:user_id', [
-        check("groupName", "group name is too short").trim().isLength({min: 4}),
-        check("groupName", "group name is empty").trim().not().isEmpty()
+        check("groupName", "Group name is too short").trim().isLength({min: 4})
     ],
     async (req, res, next) => {
 
-        const error = validationResult(req);
-        if (validRequest(error)) {
-            console.log(error);
+        const err = validationResult(req);
+        if (validRequest(err)) {
+            console.log(err);
             return res.status(409).send({
-                message: 'request 형식이 옳지 않습니다.',
+                message: err.array()[0].msg,
             });
         }
 
         const user_id = req.params.user_id * 1;
-        if (findByUserId(user_id)) {
+        if (!await findByUserId(user_id)) {
             return res.status(404).send({
                 message: '해당하는 유저가 존재하지 않습니다.'
             });
@@ -67,11 +66,9 @@ const findByInviteCode = (code) => {
     return false;
 }
 
-const findByUserId = (id) => {
-    Users.findByPk(id).then(data => {
-        return data !== null;
-    });
-    return false;
+const findByUserId = async (id) => {
+    const user = await Users.findByPk(id);
+    return user !== null;
 }
 
 const validRequest = (error) => {
