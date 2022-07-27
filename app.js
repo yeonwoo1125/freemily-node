@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const nunjucks = require('nunjucks');
 
 const groupRouter = require('./routes/groups');
+const userRouter = require('./routes/users');
 const { sequelize } = require('./models/index'); // 시퀄라이즈
 
 const app = express();
@@ -28,6 +29,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 app.use('/groups',groupRouter);
+app.use('/users',userRouter);
 
 app.use((req, res, next) => {
     const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
