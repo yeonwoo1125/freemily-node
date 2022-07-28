@@ -22,7 +22,7 @@ router.post('/',
 
         if(await findByEmail(req.body.userEmail)){
             return res.status(409).send({
-                message : '이미 존재하는 이메일입니다.'
+                message : 'Email is already use'
             });
         }
 
