@@ -17,10 +17,18 @@ router.post('/:user_id', [
             });
         }
 
-        const user_id = req.params.user_id * 1;
-        if (!await findByUserId(user_id)) {
+        const userId = req.params.user_id * 1;
+        const con = await findByUserId(userId);
+        if (!con) {
             return res.status(404).send({
                 message: '해당하는 유저가 존재하지 않습니다.'
+            });
+        }
+
+        const user = await getUser(userId);
+        if(user.group_id !== null){
+            return res.status(409).send({
+                message: '이미 그룹에 가입된 유저입니다.'
             });
         }
 
@@ -31,7 +39,7 @@ router.post('/:user_id', [
             });
             await Users.update(
                 {group_id: group.group_id},
-                {where: {user_id: user_id}, returning: true});
+                {where: {user_id: userId}, returning: true});
 
             return res.status(201).json(group);
         } catch (err) {
@@ -69,6 +77,10 @@ const findByInviteCode = (code) => {
 const findByUserId = async (id) => {
     const user = await Users.findByPk(id);
     return user !== null;
+}
+
+const getUser = async (id) =>{
+    return await Users.findByPk(id);
 }
 
 const validRequest = (error) => {
