@@ -67,7 +67,6 @@ router.post('/join/:user_id', [
     }
 
     const user = await getUser(userId);
-    console.log(user.group_id);
 
     if (user.group_id !== null) {
         return res.status(409).send({
