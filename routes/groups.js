@@ -2,6 +2,7 @@ const Groups = require('../models/group');
 const Users = require('../models/user');
 const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
+const Op = require('sequelize').Op;
 
 //그룹 생성
 router.post('/:user_id', [
@@ -75,23 +76,56 @@ router.post('/join/:user_id', [
     }
 
     const groupInviteCode = req.body.groupInviteCode;
-    if(!await findByInviteCode(groupInviteCode)){
+    if (!await findByInviteCode(groupInviteCode)) {
         return res.status(404).send({
             message: 'Group Not Found'
         });
     }
 
-    const groupId = await getGroup(groupInviteCode).group_id;
+    const group = await getGroup(groupInviteCode);
 
-   try{
-        const updateUser = await Users.update(
-            {group_id: groupId},
+    try {
+        await Users.update(
+            {group_id: group.group_id},
             {where: {user_id: userId}, returning: true});
 
-        return res.status(201).json(updateUser);
-   }catch (e){
+        const user = await getUser(userId);
+        return res.status(201).json(user);
+    } catch (e) {
         console.error(e);
-   }
+    }
+});
+
+//그룹 멤버 조회
+router.get('/:group_id/:user_id', async (req, res, next) => {
+    const userId = req.params.user_id * 1;
+    if (!await findByUserId(userId)) {
+        return res.status(404).send({
+            message: 'User Not Found'
+        });
+    }
+
+    const groupId = req.params.group_id * 1;
+    if (!await findByGroupId(groupId)) {
+        return res.status(404).send({
+            message: 'Group Not Found'
+        });
+    }
+    const user = await getUser(userId);
+    if (user.group_id !== groupId) {
+        return res.status(409).send({
+            message: 'User is not joined to this group'
+        });
+    }
+
+    const users = await Users.findAll({
+        attributes: ['user_id'],
+        where: {
+            group_id: groupId,
+            [Op.not]: {user_id: userId}
+        }
+    });
+    res.status(200).json(users);
 });
 
 const createGroupInviteCode = () => {
@@ -126,11 +160,16 @@ const findByUserId = async (id) => {
     return user !== null;
 }
 
+const findByGroupId = async (id) => {
+    const group = await Groups.findByPk(id);
+    return group !== null;
+}
+
 const getUser = async (id) => {
     return await Users.findByPk(id);
 }
 
-const getGroup = async (code)=>{
+const getGroup = async (code) => {
     return await Groups.findOne({
         where: {group_invite_code: code}
     });
