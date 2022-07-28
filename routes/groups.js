@@ -11,7 +11,6 @@ router.post('/:user_id', [
 
         const err = validationResult(req);
         if (validRequest(err)) {
-            console.log(err);
             return res.status(409).send({
                 message: err.array()[0].msg,
             });
@@ -21,14 +20,14 @@ router.post('/:user_id', [
         const con = await findByUserId(userId);
         if (!con) {
             return res.status(404).send({
-                message: '해당하는 유저가 존재하지 않습니다.'
+                message: 'User Not Found'
             });
         }
 
         const user = await getUser(userId);
-        if(user.group_id !== null){
+        if (user.group_id !== null) {
             return res.status(409).send({
-                message: '이미 그룹에 가입된 유저입니다.'
+                message: 'User already join in group'
             });
         }
 
@@ -47,6 +46,54 @@ router.post('/:user_id', [
             next(err);
         }
     });
+
+//그룹 가입
+router.post('/join/:user_id', [
+    check('groupInviteCode', 'Group invite code is empty').trim().not().isEmpty()
+], async (req, res) => {
+
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(409).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id * 1;
+    if (!await findByUserId(userId)) {
+        return res.status(404).send({
+            message: 'User Not Found'
+        });
+    }
+
+    const user = await getUser(userId);
+    console.log(user.group_id);
+
+    if (user.group_id !== null) {
+        return res.status(409).send({
+            message: 'User already join in group'
+        });
+    }
+
+    const groupInviteCode = req.body.groupInviteCode;
+    if(!await findByInviteCode(groupInviteCode)){
+        return res.status(404).send({
+            message: 'Group Not Found'
+        });
+    }
+
+    const groupId = await getGroup(groupInviteCode).group_id;
+
+   try{
+        const updateUser = await Users.update(
+            {group_id: groupId},
+            {where: {user_id: userId}, returning: true});
+
+        return res.status(201).json(updateUser);
+   }catch (e){
+        console.error(e);
+   }
+});
 
 const createGroupInviteCode = () => {
     const chs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
@@ -67,11 +114,12 @@ const createGroupInviteCode = () => {
     return ranCode;
 }
 
-const findByInviteCode = (code) => {
-    Groups.findByPk(code).then(data => {
-        return data !== null;
+const findByInviteCode = async (code) => {
+    const group = await Groups.findOne({
+        where: {group_invite_code: code}
     });
-    return false;
+    return group !== null;
+
 }
 
 const findByUserId = async (id) => {
@@ -79,8 +127,14 @@ const findByUserId = async (id) => {
     return user !== null;
 }
 
-const getUser = async (id) =>{
+const getUser = async (id) => {
     return await Users.findByPk(id);
+}
+
+const getGroup = async (code)=>{
+    return await Groups.findOne({
+        where: {group_invite_code: code}
+    });
 }
 
 const validRequest = (error) => {
