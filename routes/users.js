@@ -1,6 +1,7 @@
 const Users = require('../models/user');
 const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
+const bcrypt = require('bcrypt');
 
 //유저 생성
 router.post('/',
@@ -25,13 +26,18 @@ router.post('/',
             });
         }
 
+        const salt = 12;
+        const password = req.body.userPassword;
+        const hashPw = await bcrypt.hash(password,salt);
+
         try {
             const user = await Users.create({
                 user_name: req.body.userName,
                 user_nickname: req.body.userNickname,
                 user_email: req.body.userEmail,
-                user_password: req.body.userPassword
+                user_password: hashPw
             });
+
             return res.status(201).send({
                 "userId": user.user_id,
                 "userName": user.user_name,
@@ -74,21 +80,23 @@ router.post('/login', [
         });
     }
 
-    if(user.user_password === userPassword){
-        return res.status(200).send({
-            "userId" : user.user_id,
-            "userName" : user.user_name,
-            "userNickname" : user.user_nickname,
-            "userEmail" : user.group_id
-        });
-    }
-    else{
-        return res.status(403).send({
-            message: 'Email and password mismatch'
-        });
-    }
-
+    bcrypt.compare(userPassword, user.user_password,(err, same)=>{
+        if(same) {
+            return res.status(200).send({
+                "userId" : user.user_id,
+                "userName" : user.user_name,
+                "userNickname" : user.user_nickname,
+                "userEmail" : user.group_id
+            });
+        }
+        else {
+            return res.status(403).send({
+                message: 'Email and password mismatch'
+            })
+        }
+    });
 })
+
 const validRequest = (error) => {
     return !error.isEmpty();
 }
