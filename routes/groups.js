@@ -90,7 +90,13 @@ router.post('/join/:user_id', [
             {where: {user_id: userId}, returning: true});
 
         const user = await getUser(userId);
-        return res.status(201).json(user);
+        return res.status(201).send({
+            "userId": user.user_id,
+            "userName": user.user_name,
+            "userNickname": user.user_nickname,
+            "userEmail": user.user_email
+        });
+
     } catch (e) {
         console.error(e);
     }
@@ -125,7 +131,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
             [Op.not]: {user_id: userId}
         }
     });
-    res.status(200).json(users);
+    return res.status(200).json(users);
 });
 
 const createGroupInviteCode = () => {
