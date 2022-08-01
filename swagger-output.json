@@ -1,0 +1,494 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Freemily",
+    "description": "Freemily 백엔드 서버를 nodejs로 재구현한 프로젝트입니다.",
+    "version": "1.0.0"
+  },
+  "host": "localhost:3001",
+  "basePath": "/",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/groups/{user_id}": {
+      "post": {
+        "tags": [
+          "Group"
+        ],
+        "description": "그룹 생성 POST 요청",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "groupName": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "그룹 생성 성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "groupId": {
+                  "type": "number",
+                  "example": 1
+                },
+                "groupName": {
+                  "type": "string",
+                  "example": "animal"
+                },
+                "groupInviteCode": {
+                  "type": "string",
+                  "example": "R0QoJJq"
+                },
+                "groupReport": {
+                  "type": "string",
+                  "example": ""
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "그룹 이름이 3글자 이상이어야 함",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Group name is too short"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "유저를 찾을 수 없음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User not found"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "409": {
+            "description": "유저가 이미 그룹에 가입함",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User already join in group"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/join/{user_id}": {
+      "post": {
+        "tags": [
+          "Group"
+        ],
+        "description": "그룹 가입 POST 요청",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "groupInviteCode",
+            "in": "body",
+            "description": "그룹 초대 코드",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "groupInviteCode": {
+                  "type": "string",
+                  "example": "R0QoJJq"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "그룹 가입 성공",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string",
+                  "example": "hehehe"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "happy people"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "그룹 초대 코드가 비었음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Group invite code is empty"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "유저를 찾을 수 없음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User not found"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "409": {
+            "description": "유저가 이미 그룹에 가입함",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User already join in group"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/groups/{group_id}/{user_id}": {
+      "get": {
+        "tags": [
+          "Group"
+        ],
+        "description": "그룹 멤버(본인 제외) 조회 GET 요청",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "그룹 멤버 조회 성공",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "user_id": {
+                    "type": "number",
+                    "example": 3
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "그룹이나 유저를 찾을 수 없음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "[Group not found] or [User not found]"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "409": {
+            "description": "유저가 해당하는 그룹에 없음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "User is not joined to this group"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "유저 생성 POST 요청",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "유저 생성 정보",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                },
+                "userPassword": {
+                  "type": "string",
+                  "example": "mypassword11"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "그룹 생성",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "number",
+                  "example": 1
+                },
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 request 형식",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "array",
+                  "example": [
+                    "Email format is not valid",
+                    "Email is empty",
+                    "Password is too short",
+                    "Name is too short"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "409": {
+            "description": "이미 가입한 이메일",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email is already use"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "유저 로그인 POST 요청",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "유저 생성 정보",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                },
+                "userPassword": {
+                  "type": "string",
+                  "example": "mypassword11"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "그룹 생성",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "number",
+                  "example": 1
+                },
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 request 형식",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "[Email format is not valid] or [Password is empty]"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "이메일과 비밀번호가 일치하지 않음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email and password mismatch"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "이메일을 찾을 수 없거나 그룹에 가입하지 않음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "[Email not found] or [User not join group]"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

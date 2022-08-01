@@ -5,7 +5,9 @@ const nunjucks = require('nunjucks');
 
 const groupRouter = require('./routes/groups');
 const userRouter = require('./routes/users');
-const { sequelize } = require('./models/index'); // 시퀄라이즈
+const {sequelize} = require('./models/index');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger-output.json');
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
@@ -15,7 +17,7 @@ nunjucks.configure('views', {
     watch: true,
 });
 
-sequelize.sync({ force: false })
+sequelize.sync({force: false})
     .then(() => {
         console.log('데이터베이스 연결 성공');
     })
@@ -26,13 +28,14 @@ sequelize.sync({ force: false })
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({extended: false}));
 
-app.use('/groups',groupRouter);
-app.use('/users',userRouter);
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerFile));
+app.use('/groups', groupRouter);
+app.use('/users', userRouter);
 
 app.use((req, res, next) => {
-    const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+    const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
     error.status = 404;
     next(error);
 });
@@ -43,7 +46,6 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.render('error');
 });
-
 
 
 app.listen(app.get('port'), () => {
