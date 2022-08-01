@@ -2,10 +2,12 @@ const express = require('express');
 const path = require('path');
 const morgan = require('morgan');
 const nunjucks = require('nunjucks');
+const bodyParser = require('body-parser');
 
 const groupRouter = require('./routes/groups');
 const userRouter = require('./routes/users');
-const { sequelize } = require('./models/index'); // 시퀄라이즈
+const ingredientRouter = require('./routes/ingredients');
+const { sequelize } = require('./models/index');
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
@@ -25,11 +27,12 @@ sequelize.sync({ force: false })
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({extended : false}));
+app.use(bodyParser.json())
 
 app.use('/groups',groupRouter);
 app.use('/users',userRouter);
+app.use('/groups',ingredientRouter);
 
 app.use((req, res, next) => {
     const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
@@ -43,8 +46,6 @@ app.use((err, req, res, next) => {
     res.status(err.status || 500);
     res.render('error');
 });
-
-
 
 app.listen(app.get('port'), () => {
     console.log(app.get('port'), '번 포트에서 대기 중');
