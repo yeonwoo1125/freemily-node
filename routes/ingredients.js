@@ -91,11 +91,67 @@ router.post('/:group_id/ingredients', [
     } catch (e) {
         console.error(err);
     }
-})
+});
+
+//식재료 전체 조회
+router.get('/:group_id/ingredients', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    console.log(groupId);
+    if (!await findByGroupId(groupId)) {
+        return res.status(404).send({
+            message: 'Group Not Found'
+        });
+    }
+
+
+    const saveType = req.query.saveType;
+    /*if(saveType === null){
+        try{
+            const ingredients = await Ingredients.findAll();
+            console.log(ingredients);
+            return res.status(200).json(ingredients);
+        }catch (e){
+            console.error(e);
+        }
+    }
+    else {
+        try{
+            const ingredients = await Ingredients.findAll(
+                {where : {ingredient_save_type : saveType}}
+            );
+            console.log(ingredients);
+            return res.status(200).json(ingredients);
+        }catch (e){
+            console.error(e);
+        }
+    }*/
+    const saveType_attr = {};
+    if (saveType) {
+        if (!validEnum(ingredientSaveType, saveType)) {
+            return res.status(409).send({
+                message: 'Not in valid save type enum'
+            });
+        }
+        saveType_attr[Op.eq] = saveType;
+    } else saveType_attr[Op.not] = null;
+
+    try {
+        const ingredients = await Ingredients.findAll({
+            where: {
+                'ingredient_save_type': saveType_attr
+            }
+        })
+        console.log(ingredients)
+    } catch (e) {
+        console.error(e);
+    }
+
+
+});
 
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
-}
+};
 
 const validRequest = (error) => {
     return !error.isEmpty();

@@ -398,7 +398,7 @@
           {
             "name": "obj",
             "in": "body",
-            "description": "유저 생성 정보",
+            "description": "유저 로그인 정보",
             "schema": {
               "type": "object",
               "properties": {
@@ -486,6 +486,87 @@
                 "name": "main"
               }
             }
+          }
+        }
+      }
+    },
+    "/groups/{group_id}/ingredients": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredientCount": {
+                  "example": "any"
+                },
+                "ingredientCategory": {
+                  "example": "any"
+                },
+                "ingredientSaveType": {
+                  "example": "any"
+                },
+                "ingredientPurchaseDate": {
+                  "example": "any"
+                },
+                "ingredientExpirationDate": {
+                  "example": "any"
+                },
+                "ingredientName": {
+                  "example": "any"
+                },
+                "ingredientMemo": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "saveType",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
           }
         }
       }
