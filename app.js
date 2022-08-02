@@ -6,8 +6,12 @@ const bodyParser = require('body-parser');
 
 const groupRouter = require('./routes/groups');
 const userRouter = require('./routes/users');
+
 const ingredientRouter = require('./routes/ingredients');
 const { sequelize } = require('./models/index');
+const swaggerUi = require('swagger-ui-express');
+const swaggerFile = require('./swagger-output.json');
+
 
 const app = express();
 app.set('port', process.env.PORT || 3001);
@@ -17,7 +21,7 @@ nunjucks.configure('views', {
     watch: true,
 });
 
-sequelize.sync({ force: false })
+sequelize.sync({force: false})
     .then(() => {
         console.log('데이터베이스 연결 성공');
     })
@@ -27,15 +31,17 @@ sequelize.sync({ force: false })
 
 app.use(morgan('dev'));
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(bodyParser.json())
 
 app.use('/groups',groupRouter);
 app.use('/users',userRouter);
 app.use('/groups',ingredientRouter);
+app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
-    const error =  new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
+    const error = new Error(`${req.method} ${req.url} 라우터가 없습니다.`);
     error.status = 404;
     next(error);
 });
