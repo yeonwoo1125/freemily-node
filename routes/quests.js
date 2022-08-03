@@ -61,6 +61,30 @@ router.post('/:group_id/:user_id', [
     }
 });
 
+//심부름 목록 조회
+router.get('/:group_id',async (req, res)=>{
+    const groupId = req.params.group_id * 1;
+    if (!await findByGroupId(groupId)) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    try{
+        const quests = await Quest.findAll({
+            attributes : [
+                'quest_id','request_user_id','quest_title',
+                'quest_content','complete_check','accept_user_id'
+            ],
+            where : {group_id : groupId}
+        });
+
+        return res.status(201).json(quests);
+    }catch (e) {
+        console.error(e);
+    }
+});
+
 const validRequest = (error) => {
     return !error.isEmpty();
 }
