@@ -6,9 +6,8 @@ const bodyParser = require('body-parser');
 
 const groupRouter = require('./routes/groups');
 const userRouter = require('./routes/users');
-const questRouter = require('./routes/quests');
-
 const ingredientRouter = require('./routes/ingredients');
+
 const { sequelize } = require('./models/index');
 const swaggerUi = require('swagger-ui-express');
 const swaggerFile = require('./swagger-output.json');
@@ -36,10 +35,9 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(bodyParser.urlencoded({extended : false}));
 app.use(bodyParser.json())
 
-app.use('/groups',groupRouter);
+app.use('/groups/ingredients',ingredientRouter);
 app.use('/users',userRouter);
-app.use('/groups',ingredientRouter);
-app.use('/groups', questRouter);
+app.use('/groups',groupRouter);
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
