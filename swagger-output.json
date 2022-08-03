@@ -11,6 +11,295 @@
     "http"
   ],
   "paths": {
+    "/groups/ingredients/{group_id}": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredientCount": {
+                  "example": "any"
+                },
+                "ingredientCategory": {
+                  "example": "any"
+                },
+                "ingredientSaveType": {
+                  "example": "any"
+                },
+                "ingredientPurchaseDate": {
+                  "example": "any"
+                },
+                "ingredientExpirationDate": {
+                  "example": "any"
+                },
+                "ingredientName": {
+                  "example": "any"
+                },
+                "ingredientMemo": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      },
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "saveType",
+            "in": "query",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
+    "/users/": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "유저 생성 POST 요청",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "유저 생성 정보",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                },
+                "userPassword": {
+                  "type": "string",
+                  "example": "mypassword11"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "그룹 생성",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "number",
+                  "example": 1
+                },
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 request 형식",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "array",
+                  "example": [
+                    "Email format is not valid",
+                    "Email is empty",
+                    "Password is too short",
+                    "Name is too short"
+                  ],
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "409": {
+            "description": "이미 가입한 이메일",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email is already use"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/login": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "description": "유저 로그인 POST 요청",
+        "parameters": [
+          {
+            "name": "obj",
+            "in": "body",
+            "description": "유저 로그인 정보",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                },
+                "userPassword": {
+                  "type": "string",
+                  "example": "mypassword11"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "그룹 생성",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "number",
+                  "example": 1
+                },
+                "userName": {
+                  "type": "string",
+                  "example": "Hello"
+                },
+                "userNickname": {
+                  "type": "string",
+                  "example": "Hi"
+                },
+                "userEmail": {
+                  "type": "string",
+                  "example": "hehe@naver.com"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "400": {
+            "description": "잘못된 request 형식",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "[Email format is not valid] or [Password is empty]"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "403": {
+            "description": "이메일과 비밀번호가 일치하지 않음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "Email and password mismatch"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          },
+          "404": {
+            "description": "이메일을 찾을 수 없거나 그룹에 가입하지 않음",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string",
+                  "example": "[Email not found] or [User not join group]"
+                }
+              },
+              "xml": {
+                "name": "main"
+              }
+            }
+          }
+        }
+      }
+    },
     "/groups/{user_id}": {
       "post": {
         "tags": [
@@ -281,292 +570,6 @@
                 "name": "main"
               }
             }
-          }
-        }
-      }
-    },
-    "/users/": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "description": "유저 생성 POST 요청",
-        "parameters": [
-          {
-            "name": "obj",
-            "in": "body",
-            "description": "유저 생성 정보",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userName": {
-                  "type": "string",
-                  "example": "Hello"
-                },
-                "userNickname": {
-                  "type": "string",
-                  "example": "Hi"
-                },
-                "userEmail": {
-                  "type": "string",
-                  "example": "hehe@naver.com"
-                },
-                "userPassword": {
-                  "type": "string",
-                  "example": "mypassword11"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "그룹 생성",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "type": "number",
-                  "example": 1
-                },
-                "userName": {
-                  "type": "string",
-                  "example": "Hello"
-                },
-                "userNickname": {
-                  "type": "string",
-                  "example": "Hi"
-                },
-                "userEmail": {
-                  "type": "string",
-                  "example": "hehe@naver.com"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "400": {
-            "description": "잘못된 request 형식",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "array",
-                  "example": [
-                    "Email format is not valid",
-                    "Email is empty",
-                    "Password is too short",
-                    "Name is too short"
-                  ],
-                  "items": {
-                    "type": "string"
-                  }
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "409": {
-            "description": "이미 가입한 이메일",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "Email is already use"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/users/login": {
-      "post": {
-        "tags": [
-          "User"
-        ],
-        "description": "유저 로그인 POST 요청",
-        "parameters": [
-          {
-            "name": "obj",
-            "in": "body",
-            "description": "유저 로그인 정보",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userEmail": {
-                  "type": "string",
-                  "example": "hehe@naver.com"
-                },
-                "userPassword": {
-                  "type": "string",
-                  "example": "mypassword11"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "그룹 생성",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "userId": {
-                  "type": "number",
-                  "example": 1
-                },
-                "userName": {
-                  "type": "string",
-                  "example": "Hello"
-                },
-                "userNickname": {
-                  "type": "string",
-                  "example": "Hi"
-                },
-                "userEmail": {
-                  "type": "string",
-                  "example": "hehe@naver.com"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "400": {
-            "description": "잘못된 request 형식",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "[Email format is not valid] or [Password is empty]"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "403": {
-            "description": "이메일과 비밀번호가 일치하지 않음",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "Email and password mismatch"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          },
-          "404": {
-            "description": "이메일을 찾을 수 없거나 그룹에 가입하지 않음",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "message": {
-                  "type": "string",
-                  "example": "[Email not found] or [User not join group]"
-                }
-              },
-              "xml": {
-                "name": "main"
-              }
-            }
-          }
-        }
-      }
-    },
-    "/groups/{group_id}/ingredients": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "group_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "schema": {
-              "type": "object",
-              "properties": {
-                "ingredientCount": {
-                  "example": "any"
-                },
-                "ingredientCategory": {
-                  "example": "any"
-                },
-                "ingredientSaveType": {
-                  "example": "any"
-                },
-                "ingredientPurchaseDate": {
-                  "example": "any"
-                },
-                "ingredientExpirationDate": {
-                  "example": "any"
-                },
-                "ingredientName": {
-                  "example": "any"
-                },
-                "ingredientMemo": {
-                  "example": "any"
-                }
-              }
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Created"
-          },
-          "400": {
-            "description": "Bad Request"
-          },
-          "404": {
-            "description": "Not Found"
-          },
-          "409": {
-            "description": "Conflict"
-          }
-        }
-      },
-      "get": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "group_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "saveType",
-            "in": "query",
-            "type": "string"
-          }
-        ],
-        "responses": {
-          "404": {
-            "description": "Not Found"
-          },
-          "409": {
-            "description": "Conflict"
           }
         }
       }
