@@ -61,7 +61,7 @@ router.post('/:user_id', [check("groupName", "Group name is too short").trim().i
 
     try {
         const group = await Groups.create({
-            group_name: req.body.groupName, group_invite_code: createGroupInviteCode(),
+            group_name: req.body.groupName, group_invite_code: await createGroupInviteCode(),
         });
         await Users.update({group_id: group.group_id}, {where: {user_id: userId}, returning: true});
 
@@ -159,35 +159,35 @@ router.post('/join/:user_id', [
 
 //그룹 멤버 조회
 router.get('/:group_id/:user_id', async (req, res, next) => {
-  /*
-  #swagger.tags = ['Group']
-  #swagger.description = '그룹 멤버(본인 제외) 조회 GET 요청'
-  #swagger.responses[200] = {
-        description: '그룹 멤버 조회 성공',
-        schema: [
-            {
-                user_id : 1
-            },
-            {
-                user_id : 3
-            }
-        ]
+    /*
+    #swagger.tags = ['Group']
+    #swagger.description = '그룹 멤버(본인 제외) 조회 GET 요청'
+    #swagger.responses[200] = {
+          description: '그룹 멤버 조회 성공',
+          schema: [
+              {
+                  user_id : 1
+              },
+              {
+                  user_id : 3
+              }
+          ]
 
 
-  }
-  #swagger.responses[404] = {
-        description : '그룹이나 유저를 찾을 수 없음',
-        schema : {
-            message : '[Group not found] or [User not found]'
-        }
-  }
-    #swagger.responses[409] = {
-        description : '유저가 해당하는 그룹에 없음',
-        schema : {
-            message : 'User is not joined to this group'
-        }
-  }
- */
+    }
+    #swagger.responses[404] = {
+          description : '그룹이나 유저를 찾을 수 없음',
+          schema : {
+              message : '[Group not found] or [User not found]'
+          }
+    }
+      #swagger.responses[409] = {
+          description : '유저가 해당하는 그룹에 없음',
+          schema : {
+              message : 'User is not joined to this group'
+          }
+    }
+   */
 
     const userId = req.params.user_id * 1;
     if (!await findByUserId(userId)) {
@@ -217,7 +217,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     return res.status(200).json(users);
 });
 
-const createGroupInviteCode = () => {
+const createGroupInviteCode = async () => {
     const chs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
     let ranCode = '';
 
@@ -228,7 +228,7 @@ const createGroupInviteCode = () => {
             code += c;
         }
         ranCode = code;
-    } while ((findByInviteCode(ranCode)));
+    } while ((await findByInviteCode(ranCode)));
     return ranCode;
 }
 
@@ -237,7 +237,6 @@ const findByInviteCode = async (code) => {
         where: {group_invite_code: code}
     });
     return group !== null;
-
 }
 
 const findByUserId = async (id) => {
