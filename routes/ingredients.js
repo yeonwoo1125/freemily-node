@@ -31,7 +31,7 @@ Object.freeze(ingredientCategory);
 
 
 //식재료 생성
-router.post('/:group_id/ingredients', [
+router.post('/:group_id', [
     check('ingredientName', 'Name is empty').trim().not().isEmpty(),
     check('ingredientSaveType', 'Save type is empty').trim().not().isEmpty(),
     check('ingredientPurchaseDate', 'Purchase date is empty').trim().not().isEmpty(),
@@ -94,7 +94,7 @@ router.post('/:group_id/ingredients', [
 });
 
 //식재료 전체 조회
-router.get('/:group_id/ingredients', async (req, res) => {
+router.get('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
     console.log(groupId);
     if (!await findByGroupId(groupId)) {
@@ -103,28 +103,7 @@ router.get('/:group_id/ingredients', async (req, res) => {
         });
     }
 
-
     const saveType = req.query.saveType;
-    /*if(saveType === null){
-        try{
-            const ingredients = await Ingredients.findAll();
-            console.log(ingredients);
-            return res.status(200).json(ingredients);
-        }catch (e){
-            console.error(e);
-        }
-    }
-    else {
-        try{
-            const ingredients = await Ingredients.findAll(
-                {where : {ingredient_save_type : saveType}}
-            );
-            console.log(ingredients);
-            return res.status(200).json(ingredients);
-        }catch (e){
-            console.error(e);
-        }
-    }*/
     const saveType_attr = {};
     if (saveType) {
         if (!validEnum(ingredientSaveType, saveType)) {
@@ -137,16 +116,19 @@ router.get('/:group_id/ingredients', async (req, res) => {
 
     try {
         const ingredients = await Ingredients.findAll({
+            attributes: [
+                'ingredient_id', 'ingredient_name', 'ingredient_save_type',
+                'ingredient_category', 'ingredient_expiration_date',
+                'ingredient_purchase_date', 'ingredient_count'
+            ],
             where: {
                 'ingredient_save_type': saveType_attr
             }
         })
-        console.log(ingredients)
+        return res.status(200).json(ingredients);
     } catch (e) {
         console.error(e);
     }
-
-
 });
 
 const validEnum = (e, d) => {
