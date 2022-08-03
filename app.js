@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 
 const groupRouter = require('./routes/groups');
 const userRouter = require('./routes/users');
+const questRouter = require('./routes/quests');
 
 const ingredientRouter = require('./routes/ingredients');
 const { sequelize } = require('./models/index');
@@ -38,6 +39,7 @@ app.use(bodyParser.json())
 app.use('/groups',groupRouter);
 app.use('/users',userRouter);
 app.use('/groups',ingredientRouter);
+app.use('/groups', questRouter);
 app.use('/swagger', swaggerUi.serve, swaggerUi.setup(swaggerFile));
 
 app.use((req, res, next) => {
