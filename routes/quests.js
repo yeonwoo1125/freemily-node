@@ -7,7 +7,7 @@ const router = require('express').Router();
 const Op = require('sequelize').Op;
 
 //심부름 생성
-router.post('/:group_id/quests/:user_id', [
+router.post('/:group_id/:user_id', [
     check("questTitle", "title is empty").trim().not().isEmpty(),
     check("questContent", "content is empty").trim().not().isEmpty()
 ], async (req, res) => {
