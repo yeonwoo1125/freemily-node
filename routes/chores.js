@@ -1,6 +1,6 @@
-const Groups = require('../models/group');
-const Chores = require('../models/chore');
-const Users = require("../models/user");
+const Group = require('../models/group');
+const Chore = require('../models/chore');
+const User = require("../models/user");
 const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
@@ -92,7 +92,7 @@ router.post('/:group_id/:user_id', [
     }
 
     try {
-        const chore = await Chores.create({
+        const chore = await Chore.create({
             chore_title: choreTitle,
             chore_category: choreCategory,
             chore_date: choreDate,
@@ -116,16 +116,16 @@ const validRequest = (error) => {
 };
 
 const findByGroupId = async (id) => {
-    const group = await Groups.findByPk(id);
+    const group = await Group.findByPk(id);
     return group !== null;
 };
 
 const findByUserId = async (id) => {
-    return await Users.findByPk(id);
+    return await User.findByPk(id);
 };
 
 const checkChore = async (category, date, id) => {
-    const chore = await Chores.findOne({
+    const chore = await Chore.findOne({
         where: {
             chore_category: category,
             chore_date: date,

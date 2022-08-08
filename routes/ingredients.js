@@ -1,5 +1,5 @@
-const Groups = require('../models/group');
-const Ingredients = require('../models/ingredient');
+const Group = require('../models/group');
+const Ingredient = require('../models/ingredient');
 const {validationResult, check} = require("express-validator");
 const moment = require('moment');
 const router = require('express').Router();
@@ -77,7 +77,7 @@ router.post('/:group_id', [
     const expiration = moment(req.body.ingredientExpirationDate).format('YYYY-MM-DD');
 
     try {
-        const ingredient = await Ingredients.create({
+        const ingredient = await ingredient.create({
             ingredient_name: req.body.ingredientName,
             ingredient_save_type: req.body.ingredientSaveType,
             ingredient_purchase_date: purchase,
@@ -115,7 +115,7 @@ router.get('/:group_id', async (req, res) => {
     } else saveType_attr[Op.not] = null;
 
     try {
-        const ingredients = await Ingredients.findAll({
+        const ingredients = await Ingredient.findAll({
             attributes: [
                 'ingredient_id', 'ingredient_name', 'ingredient_save_type',
                 'ingredient_category', 'ingredient_expiration_date',
@@ -140,7 +140,7 @@ const validRequest = (error) => {
 };
 
 const findByGroupId = async (id) => {
-    const group = await Groups.findByPk(id);
+    const group = await Group.findByPk(id);
     return group !== null;
 };
 
