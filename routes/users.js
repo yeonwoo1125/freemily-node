@@ -152,7 +152,7 @@ router.post('/login', [
         });
     }
 
-    const user = await getUserByEmail(userEmail);
+    const user = await findByUserEmail(userEmail);
     if (user.group_id === null) {
         return res.status(404).send({
             message: 'User not join group'
@@ -208,14 +208,56 @@ router.delete('/:user_id', [
         await User.destroy({
             where: {user_id: userId}
         });
-        return res.status(204).send({
+        return res.status(200).send({
             message: 'User deleted'
 
         });
     } catch (e) {
         console.error(e);
     }
-})
+});
+
+//유저 정보 수정
+router.put('/:user_id', [
+    check('userName', 'Name is empty').trim().not().isEmpty()
+], async (req, res) => {
+
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id;
+    const user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: 'User not found'
+        });
+    }
+
+    const name = req.body.userName;
+    const nickname = req.body.userNickname;
+
+    try {
+        await User.update(
+            {
+                user_name: name,
+                user_nickname: nickname
+            },
+            {
+                where: {user_id: userId}
+            }
+        );
+
+        return res.status(200).send({
+            message: 'User updated'
+        });
+    } catch (e) {
+        console.error(e);
+    }
+});
 
 
 const validRequest = (error) => {
@@ -229,7 +271,7 @@ const findByEmail = async (email) => {
     return user.length !== 0;
 }
 
-const getUserByEmail = async (email) => {
+const findByUserEmail = async (email) => {
     return await User.findOne({
         where: {user_email: email}
     });
