@@ -7,6 +7,11 @@ const development = {
   database: env.DB_DATABASE,
   host: env.DB_HOST,
   dialect: "mysql",
+  timezone : '+09:00',
+  dialectOptions : {
+    dateStrings : true,
+    typeCast : true
+  }
 };
 
 const production = {
@@ -15,6 +20,11 @@ const production = {
   database: env.DB_DATABASE,
   host: env.DB_HOST,
   dialect: "mysql",
+  timezone : '+09:00',
+  dialectOptions : {
+    dateStrings : true,
+    typeCast : true
+  }
 };
 
 const test = {
@@ -23,6 +33,11 @@ const test = {
   database: env.DB_DATABASE,
   host: env.DB_HOST,
   dialect: "mysql",
+  timezone : '+09:00',
+  dialectOptions : {
+    dateStrings : true,
+    typeCast : true
+  }
 };
 
 module.exports = { development, production, test };

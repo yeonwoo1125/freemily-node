@@ -2,6 +2,7 @@ const Group = require('../models/group');
 const Chore = require('../models/chore');
 const User = require("../models/user");
 const {validationResult, check} = require("express-validator");
+const moment = require("moment");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
 
@@ -66,7 +67,7 @@ router.post('/:group_id/:user_id', [
     }
 
     const choreUser = await findByUserId(choreUserId);
-    if(choreUser === null){
+    if (choreUser === null) {
         return res.status(404).send({
             message: 'Chore user not found'
         });
@@ -164,6 +165,38 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
     }
 });
 
+//당번 하루 목록
+router.get('/:group_id/one-day', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    const date = req.query.date;
+    console.log(date);
+    if (!checkDateFormat(date)) {
+        return res.status(400).send({
+            message: 'Date format is not valid'
+        });
+    }
+
+    try {
+        const chores = await Chore.findAll({
+            where: {
+                group_id: groupId,
+                chore_date: date
+            }
+        });
+
+        return res.status(200).json(chores);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
 };
@@ -193,6 +226,10 @@ const checkChore = async (category, date, id) => {
 
 const findByChoreId = async (id) => {
     return await Chore.findByPk(id);
+}
+
+const checkDateFormat = (date) => {
+    return moment(date, 'YYYY-MM-DD').isValid();
 }
 
 module.exports = router;
