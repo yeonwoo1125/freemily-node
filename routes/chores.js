@@ -65,7 +65,14 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    if (user.group_id !== groupId) {
+    const choreUser = await findByUserId(choreUserId);
+    if(choreUser === null){
+        return res.status(404).send({
+            message: 'Chore user not found'
+        });
+    }
+
+    if (choreUser.group_id !== groupId) {
         return res.status(404).send({
             message: 'Chore user is not joined to this group'
         });
