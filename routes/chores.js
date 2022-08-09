@@ -37,9 +37,10 @@ router.post('/:group_id/:user_id', [
     }
 
     const groupId = req.params.group_id * 1;
-    if (!await findByGroupId(groupId)) {
+    const group = await findByGroupId(groupId);
+    if (group === null) {
         return res.status(404).send({
-            message: 'Group Not Found'
+            message: 'Group not found'
         });
     }
 
@@ -64,19 +65,11 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    const choreUser = await findByUserId(userId);
-    if (choreUser === null) {
-        return res.status(404).send({
-            message: 'Chore user not found'
-        });
-    }
-
-    if (choreUserId.group_id !== groupId) {
+    if (user.group_id !== groupId) {
         return res.status(404).send({
             message: 'Chore user is not joined to this group'
         });
     }
-
 
     choreDate = new Date(choreDate);
     if (choreDate < Date.now()) {
@@ -107,6 +100,63 @@ router.post('/:group_id/:user_id', [
 
 });
 
+//당번 인증 요청 보내기
+router.put('/:group_id/:chore_id/certify', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    const choreId = req.params.chore_id * 1;
+    let chore = await findByChoreId(choreId);
+    if (chore === null) {
+        return res.status(404).send({
+            message: 'Chore not found'
+        });
+    }
+
+    if (groupId !== chore.group_id) {
+        return res.status(404).send({
+            message: 'Not chores for a group'
+        });
+    }
+
+    if (chore.chore_check === choreChecks.SUCCESS || chore.chore_check === choreChecks.REQUEST) {
+        return res.status(409).send({
+            message: 'Already Requested for Certification'
+        })
+    }
+
+    if (chore.chore_check === choreChecks.FAIL) {
+        return res.status(409).send({
+            message: 'Already failed chore'
+        })
+    }
+
+    try {
+        await Chore.update(
+            {
+                chore_check: choreChecks.REQUEST
+            },
+            {
+                where: {chore_id: choreId}
+            }
+        );
+
+        chore = await findByChoreId(choreId);
+        if (chore.chore_check === choreChecks.REQUEST) {
+            return res.status(200).send({
+                message: 'Chore updated'
+            });
+        }
+    } catch (e) {
+        console.error(e);
+    }
+});
+
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
 };
@@ -116,8 +166,7 @@ const validRequest = (error) => {
 };
 
 const findByGroupId = async (id) => {
-    const group = await Group.findByPk(id);
-    return group !== null;
+    return await Group.findByPk(id);
 };
 
 const findByUserId = async (id) => {
@@ -133,6 +182,10 @@ const checkChore = async (category, date, id) => {
         }
     });
     return chore !== null;
+}
+
+const findByChoreId = async (id) => {
+    return await Chore.findByPk(id);
 }
 
 module.exports = router;
