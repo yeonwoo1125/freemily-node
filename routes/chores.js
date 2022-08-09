@@ -176,7 +176,6 @@ router.get('/:group_id/one-day', async (req, res) => {
     }
 
     const date = req.query.date;
-    console.log(date);
     if (!checkDateFormat(date)) {
         return res.status(400).send({
             message: 'Date format is not valid'
@@ -192,6 +191,49 @@ router.get('/:group_id/one-day', async (req, res) => {
         });
 
         return res.status(200).json(chores);
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+//당번 삭제
+router.delete('/:group_id/:chore_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    const choreId = req.params.chore_id * 1;
+    let chore = await findByChoreId(choreId);
+    if (chore === null) {
+        return res.status(404).send({
+            message: 'Chore not found'
+        });
+    }
+
+    if (groupId !== chore.group_id) {
+        return res.status(404).send({
+            message: 'Not chores for a group'
+        });
+    }
+
+    if (chore.chore_check === choreChecks.FAIL || chore.chore_check === choreChecks.SUCCESS) {
+        return res.status(405).send({
+            message: 'Already finished chore'
+        });
+    }
+
+    try {
+        await Chore.destroy({
+            where : {chore_id : choreId}
+        });
+
+        return res.status(200).send({
+            message : 'Chore deleted'
+        })
     } catch (e) {
         console.error(e);
     }
