@@ -5,7 +5,9 @@ const router = require('express').Router();
 const Op = require('sequelize').Op;
 
 //그룹 생성
-router.post('/:user_id', [check("groupName", "Group name is too short").trim().isLength({min: 4})], async (req, res, next) => {
+router.post('/:user_id', [
+    check("groupName", "Group name is too short").trim().isLength({min: 4})
+], async (req, res, next) => {
     /*
       #swagger.tags = ['Group']
       #swagger.description = '그룹 생성 POST 요청'
@@ -45,14 +47,13 @@ router.post('/:user_id', [check("groupName", "Group name is too short").trim().i
     }
 
     const userId = req.params.user_id * 1;
-    const con = await findByUserId(userId);
-    if (!con) {
+    const user = await findByUserId(userId);
+    if (user === null) {
         return res.status(404).send({
             message: 'User not found'
         });
     }
 
-    const user = await getUser(userId);
     if (user.group_id !== null) {
         return res.status(409).send({
             message: 'User already join in group'
@@ -121,13 +122,12 @@ router.post('/join/:user_id', [
     }
 
     const userId = req.params.user_id * 1;
-    if (!await findByUserId(userId)) {
+    const user = await findByUserId(userId);
+    if (user === null) {
         return res.status(404).send({
             message: 'User Not Found'
         });
     }
-
-    const user = await getUser(userId);
 
     if (user.group_id !== null) {
         return res.status(409).send({
@@ -136,13 +136,12 @@ router.post('/join/:user_id', [
     }
 
     const groupInviteCode = req.body.groupInviteCode;
-    if (!await findByInviteCode(groupInviteCode)) {
+    const group = await findByGroupCode(groupInviteCode);
+    if (group === null) {
         return res.status(404).send({
             message: 'Group Not Found'
         });
     }
-
-    const group = await getGroup(groupInviteCode);
 
     try {
         await User.update({group_id: group.group_id}, {where: {user_id: userId}, returning: true});
@@ -190,19 +189,21 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
    */
 
     const userId = req.params.user_id * 1;
-    if (!await findByUserId(userId)) {
+    const user = await findByUserId(userId);
+    if (user === null) {
         return res.status(404).send({
             message: 'User Not Found'
         });
     }
 
     const groupId = req.params.group_id * 1;
-    if (!await findByGroupId(groupId)) {
+    const group = await findByGroupId(groupId);
+    if (group === null) {
         return res.status(404).send({
             message: 'Group Not Found'
         });
     }
-    const user = await getUser(userId);
+
     if (user.group_id !== groupId) {
         return res.status(409).send({
             message: 'User is not joined to this group'
@@ -217,6 +218,44 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     return res.status(200).json(users);
 });
 
+//그룹 공지 등록
+router.put('/:group_id/report', [
+    check('groupReport', 'Report is empty').trim().not().isEmpty(),
+    check('groupReport', 'Report is too long').trim().isLength({max: 50})
+], async (req, res) => {
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const groupId = req.params.group_id * 1;
+    let group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    const groupReport = req.body.groupReport;
+    try {
+        await Group.update(
+            {
+                group_report: groupReport
+            },{
+                where : {group_id : groupId}
+            }
+        );
+        group = await findByGroupId(groupId);
+        return res.status(200).send({
+            groupReport : group.group_report
+        });
+    } catch (e) {
+        console.error(e);
+    }
+});
+
 const createGroupInviteCode = async () => {
     const chs = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'];
     let ranCode = '';
@@ -228,32 +267,20 @@ const createGroupInviteCode = async () => {
             code += c;
         }
         ranCode = code;
-    } while ((await findByInviteCode(ranCode)));
+    } while ((await findByGroupCode(ranCode) !== null));
     return ranCode;
 }
 
-const findByInviteCode = async (code) => {
-    const group = await Group.findOne({
-        where: {group_invite_code: code}
-    });
-    return group !== null;
-}
 
 const findByUserId = async (id) => {
-    const user = await User.findByPk(id);
-    return user !== null;
-}
-
-const findByGroupId = async (id) => {
-    const group = await Group.findByPk(id);
-    return group !== null;
-}
-
-const getUser = async (id) => {
     return await User.findByPk(id);
 }
 
-const getGroup = async (code) => {
+const findByGroupId = async (id) => {
+    return await Group.findByPk(id);
+}
+
+const findByGroupCode = async (code) => {
     return await Group.findOne({
         where: {group_invite_code: code}
     });
