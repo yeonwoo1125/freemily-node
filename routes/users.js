@@ -230,7 +230,7 @@ router.put('/:user_id', [
     }
 
     const userId = req.params.user_id;
-    const user = await findByUserId(userId);
+    let user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
             message: 'User not found'
@@ -239,7 +239,6 @@ router.put('/:user_id', [
 
     const name = req.body.userName;
     const nickname = req.body.userNickname;
-
     try {
         await User.update(
             {
@@ -251,8 +250,10 @@ router.put('/:user_id', [
             }
         );
 
+        user = await findByUserId(userId);
         return res.status(200).send({
-            message: 'User updated'
+            userName : user.user_name,
+            userNickname : user.user_nickname
         });
     } catch (e) {
         console.error(e);
