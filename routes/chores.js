@@ -6,20 +6,20 @@ const moment = require("moment");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
 
-const choreCategorys = {
+const ChoreCategory = {
     DISH_WASHING: '설거지',
     SHOPPING: '장보기',
     COOK: '요리'
 };
-Object.freeze(choreCategorys);
+Object.freeze(ChoreCategory);
 
-const choreChecks = {
+const ChoreCheck = {
     BEFORE: '인증 요청 전',
     REQUEST: '인증 요청',
     SUCCESS: '수락',
     FAIL: '거절'
 };
-Object.freeze(choreChecks);
+Object.freeze(ChoreCheck);
 
 
 //당번 생성
@@ -60,7 +60,7 @@ router.post('/:group_id/:user_id', [
     }
 
     let {choreTitle, choreCategory, choreDate, choreUserId} = req.body;
-    if (!validEnum(choreCategorys, choreCategory)) {
+    if (!validEnum(ChoreCategory, choreCategory)) {
         return res.status(404).send({
             message: 'Not in valid category enum'
         });
@@ -97,7 +97,7 @@ router.post('/:group_id/:user_id', [
             chore_title: choreTitle,
             chore_category: choreCategory,
             chore_date: choreDate,
-            chore_check: choreChecks.BEFORE,
+            chore_check: ChoreCheck.BEFORE,
             group_id: groupId,
             chore_user_id: choreUserId
         });
@@ -132,13 +132,13 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
         });
     }
 
-    if (chore.chore_check === choreChecks.SUCCESS || chore.chore_check === choreChecks.REQUEST) {
+    if (chore.chore_check === ChoreCheck.SUCCESS || chore.chore_check === ChoreCheck.REQUEST) {
         return res.status(409).send({
             message: 'Already Requested for Certification'
         })
     }
 
-    if (chore.chore_check === choreChecks.FAIL) {
+    if (chore.chore_check === ChoreCheck.FAIL) {
         return res.status(409).send({
             message: 'Already failed chore'
         })
@@ -147,7 +147,7 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
     try {
         await Chore.update(
             {
-                chore_check: choreChecks.REQUEST
+                chore_check: ChoreCheck.REQUEST
             },
             {
                 where: {chore_id: choreId}
@@ -155,7 +155,7 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
         );
 
         chore = await findByChoreId(choreId);
-        if (chore.chore_check === choreChecks.REQUEST) {
+        if (chore.chore_check === ChoreCheck.REQUEST) {
             return res.status(200).send({
                 message: 'Chore updated'
             });
@@ -220,7 +220,7 @@ router.delete('/:group_id/:chore_id', async (req, res) => {
         });
     }
 
-    if (chore.chore_check === choreChecks.FAIL || chore.chore_check === choreChecks.SUCCESS) {
+    if (chore.chore_check === ChoreCheck.FAIL || chore.chore_check === ChoreCheck.SUCCESS) {
         return res.status(405).send({
             message: 'Already finished chore'
         });
