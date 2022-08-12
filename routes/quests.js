@@ -2,7 +2,6 @@ const Quest = require('../models/quest');
 const User = require('../models/user');
 const Group = require('../models/group');
 const {validationResult, check} = require("express-validator");
-const Users = require("../models/user");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
 
@@ -23,7 +22,7 @@ router.post('/:group_id/:user_id', [
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group not found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -31,12 +30,12 @@ router.post('/:group_id/:user_id', [
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
     if (user.group_id !== groupId) {
         return res.status(404).send({
-            message: 'User is not joined to this group'
+            message: '유저가 해당하는 그룹에 가입하지 않았습니다.'
         });
     }
 
@@ -67,7 +66,7 @@ router.get('/:group_id', async (req, res) => {
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group not found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -103,7 +102,7 @@ router.put('/:group_id/:quest_id', [
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group not found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -111,13 +110,13 @@ router.put('/:group_id/:quest_id', [
     let quest = await findByQuestId(questId);
     if (quest === null) {
         return res.status(404).send({
-            message: 'Quest not found'
+            message: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
     if (quest.group_id !== groupId) {
         return res.status(404).send({
-            message: 'Not quest for a group'
+            message: '그룹에 해당하는 심부름이 없습니다.'
         })
     }
 
@@ -125,25 +124,25 @@ router.put('/:group_id/:quest_id', [
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== groupId) {
         return res.status(404).send({
-            message: 'User is not joined to this group'
+            message: '유저가 해당하는 그룹에 존재하지 않습니다.'
         })
     }
 
     if (quest.request_user_id !== userId) {
         return res.status(409).send({
-            message: 'Only users you create can modify'
+            message: '심부름을 생성한 유저만 수정할 수 있습니다.'
         })
     }
 
     if (quest.accept_user_id !== -1) {
         return res.status(405).send({
-            message: 'Already accepted quest'
+            message: '이미 수락자가 있는 심부름입니다.'
         })
     }
 
@@ -175,7 +174,7 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group not found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -183,13 +182,13 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     const quest = await findByQuestId(questId);
     if (quest === null) {
         return res.status(404).send({
-            message: 'Quest not found'
+            message: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
     if (quest.group_id !== groupId) {
         return res.status(404).send({
-            message: 'Not quest for a group'
+            message: '그룹에 해당하는 심부름이 없습니다.'
         })
     }
 
@@ -197,19 +196,19 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (quest.request_user_id !== userId) {
         return res.status(409).send({
-            message: 'Only the person who created it can delete it'
+            message: '심부름을 생성한 유저만 삭제할 수 있습니다.'
         })
     }
 
     if (quest.accept_user_id !== -1) {
         return res.status(405).send({
-            message: 'Already accepted quest'
+            message: '이미 수락자가 있는 심부름입니다.'
         })
     }
 
@@ -218,7 +217,7 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     });
 
     return res.status(200).send({
-        message: 'Quest deleted'
+        message: '심부름이 삭제되었습니다.'
     })
 });
 

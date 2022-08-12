@@ -50,13 +50,13 @@ router.post('/:user_id', [
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== null) {
         return res.status(409).send({
-            message: 'User already join in group'
+            message: '이미 그룹에 가입한 유저입니다.'
         });
     }
 
@@ -125,13 +125,13 @@ router.post('/join/:user_id', [
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User Not Found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== null) {
         return res.status(409).send({
-            message: 'User already join in group'
+            message: '이미 그룹에 가입한 유저입니다.'
         });
     }
 
@@ -139,7 +139,7 @@ router.post('/join/:user_id', [
     const group = await findByGroupCode(groupInviteCode);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group Not Found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -192,7 +192,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User Not Found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
@@ -200,13 +200,13 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group Not Found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== groupId) {
         return res.status(409).send({
-            message: 'User is not joined to this group'
+            message: '유저가 해당하는 그룹에 가입하지 않았습니다.'
         });
     }
 
@@ -234,7 +234,7 @@ router.put('/:group_id/report', [
     let group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group not found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
