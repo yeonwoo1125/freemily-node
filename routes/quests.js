@@ -169,6 +169,59 @@ router.put('/:group_id/:quest_id', [
     });
 });
 
+//심부름 삭제
+router.delete('/:group_id/:quest_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: 'Group not found'
+        });
+    }
+
+    const questId = req.params.quest_id * 1;
+    const quest = await findByQuestId(questId);
+    if (quest === null) {
+        return res.status(404).send({
+            message: 'Quest not found'
+        });
+    }
+
+    if (quest.group_id !== groupId) {
+        return res.status(404).send({
+            message: 'Not quest for a group'
+        })
+    }
+
+    const userId = req.query.userId * 1;
+    const user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: 'User not found'
+        });
+    }
+
+    if (quest.request_user_id !== userId) {
+        return res.status(409).send({
+            message: 'Only the person who created it can delete it'
+        })
+    }
+
+    if (quest.accept_user_id !== -1) {
+        return res.status(405).send({
+            message: 'Already accepted quest'
+        })
+    }
+
+    await Quest.destroy({
+        where: {quest_id: questId}
+    });
+
+    return res.status(200).send({
+        message: 'Quest deleted'
+    })
+});
+
 const validRequest = (error) => {
     return !error.isEmpty();
 }
