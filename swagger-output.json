@@ -161,6 +161,62 @@
         }
       }
     },
+    "/groups/quests/{group_id}/{quest_id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quest_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requesterId",
+            "in": "query",
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "questTitle": {
+                  "example": "any"
+                },
+                "questContent": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "405": {
+            "description": "Method Not Allowed"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
     "/groups/chores/{group_id}/{user_id}": {
       "post": {
         "description": "",
