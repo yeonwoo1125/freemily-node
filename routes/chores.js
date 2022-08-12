@@ -7,17 +7,17 @@ const router = require('express').Router();
 const Op = require('sequelize').Op;
 
 const ChoreCategory = {
-    DISH_WASHING: '설거지',
-    SHOPPING: '장보기',
-    COOK: '요리'
+    DISH_WASHING: 'DISH_WASHING',
+    SHOPPING: 'SHOPPING',
+    COOK: 'COOK'
 };
 Object.freeze(ChoreCategory);
 
 const ChoreCheck = {
-    BEFORE: '인증 요청 전',
-    REQUEST: '인증 요청',
-    SUCCESS: '수락',
-    FAIL: '거절'
+    BEFORE: 'BEFORE',
+    REQUEST: 'REQUEST',
+    SUCCESS: 'SUCCESS',
+    FAIL: 'FAIL'
 };
 Object.freeze(ChoreCheck);
 
