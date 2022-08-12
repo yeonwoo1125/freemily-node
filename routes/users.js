@@ -62,7 +62,7 @@ router.post('/',
 
         if (await findByEmail(req.body.userEmail)) {
             return res.status(409).send({
-                message: 'Email is already use'
+                message: '이미 가입한 이메일입니다.'
             });
         }
 
@@ -148,14 +148,14 @@ router.post('/login', [
 
     if (!await findByEmail(userEmail)) {
         return res.status(404).send({
-            message: 'Email not found'
+            message: '해당하는 이메일을 찾을 수 없습니다.'
         });
     }
 
     const user = await findByUserEmail(userEmail);
     if (user.group_id === null) {
         return res.status(404).send({
-            message: 'User not join group'
+            message: '유저가 해당하는 그룹에 존재하지 않습니다.'
         });
     }
 
@@ -169,7 +169,7 @@ router.post('/login', [
             });
         } else {
             return res.status(403).send({
-                message: 'Email and password mismatch'
+                message: '이메일과 비밀번호가 일치하지 않습니다.'
             })
         }
     });
@@ -191,7 +191,7 @@ router.delete('/:user_id', [
     const user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
@@ -199,7 +199,7 @@ router.delete('/:user_id', [
     bcrypt.compare(password, user.user_password, (err, same) => {
         if (!same) {
             return res.status(401).send({
-                message: 'Password is wrong'
+                message: '비밀번호가 틀렸습니다.'
             });
         }
     });
@@ -209,7 +209,7 @@ router.delete('/:user_id', [
             where: {user_id: userId}
         });
         return res.status(200).send({
-            message: 'User deleted'
+            message: '유저가 삭제되었습니다.'
 
         });
     } catch (e) {
@@ -233,7 +233,7 @@ router.put('/:user_id', [
     let user = await findByUserId(userId);
     if (user === null) {
         return res.status(404).send({
-            message: 'User not found'
+            message: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 

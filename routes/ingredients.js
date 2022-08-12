@@ -52,25 +52,25 @@ router.post('/:group_id', [
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group Not Found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
     if (!checkIngredientCount(req.body.ingredientCount)) {
         return res.status(409).send({
-            message: 'Count is zero'
+            message: '식재료의 수가 0입니다.'
         });
     }
 
     if (!validEnum(IngredientCategory, req.body.ingredientCategory)) {
-        return res.status(409).send({
-            message: 'Not in valid category enum'
+        return res.status(404).send({
+            message: 'category에 해당하는 값이 없습니다.'
         });
     }
 
     if (!validEnum(IngredientSaveType, req.body.ingredientSaveType)) {
-        return res.status(409).send({
-            message: 'Not in valid save type enum'
+        return res.status(404).send({
+            message: 'save type에 해당하는 값이 없습니다.'
         });
     }
 
@@ -100,7 +100,7 @@ router.get('/:group_id', async (req, res) => {
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
-            message: 'Group Not Found'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
@@ -109,7 +109,7 @@ router.get('/:group_id', async (req, res) => {
     if (saveType) {
         if (!validEnum(IngredientSaveType, saveType)) {
             return res.status(409).send({
-                message: 'Not in valid save type enum'
+                message: 'save type에 없는 값입니다.'
             });
         }
         saveType_attr[Op.eq] = saveType;
