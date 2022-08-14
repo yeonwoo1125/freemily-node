@@ -221,6 +221,40 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     })
 });
 
+//심부름 상세 조회
+router.get('/:group_id/details/:quest_id', async (req, res)=>{
+    const groupId = req.params.group_id*1;
+    const group = await findByGroupId(groupId);
+    if(group === null){
+        return res.status(404).send({
+            message : '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const questId = req.params.quest_id;
+    const quest = await findByQuestId(questId);
+    if(quest === null){
+        return res.status(404).send({
+            message : '해당하는 심부름을 찾을 수 없습니다.'
+        });
+    }
+
+    if(quest.group_id !== groupId){
+        return res.status(404).send({
+            message : '그룹에 해당하는 심부름이 없습니다.'
+        });
+    }
+
+    return res.status(200).json({
+        requestUserId : quest.request_user_id,
+        questTitle : quest.quest_title,
+        questContent : quest.quest_content,
+        questCreatedDate : quest.createdAt,
+        completeCheck : quest.complete_check,
+        acceptUserId : quest.accept_user_id
+    });
+});
+
 const validRequest = (error) => {
     return !error.isEmpty();
 }
