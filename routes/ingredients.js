@@ -132,6 +132,42 @@ router.get('/:group_id', async (req, res) => {
     }
 });
 
+//식재료 상세 조회
+router.get('/:group_id/details/:ingredient_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const ingredientId = req.params.ingredient_id * 1;
+    const ingredient = await findByIngredientId(ingredientId);
+    if (ingredient === null) {
+        return res.status(404).send({
+            message: '해당하는 식재료를 찾을 수 없습니다.'
+        });
+    }
+
+    if (ingredient.group_id !== groupId) {
+        return res.status(404).send({
+            message: '그룹에 해당하는 식재료가 없습니다.'
+        })
+    }
+
+    return res.status(200).json({
+        ingredientName : ingredient.ingredient_name,
+        ingredientSaveType : ingredient.ingredient_save_type,
+        ingredientPurchaseDate : ingredient.ingredient_purchase_date,
+        ingredientExpirationDate : ingredient.ingredient_expiration_date,
+        ingredientCategory : ingredient.ingredient_category,
+        ingredientCount : ingredient.ingredient_count,
+        ingredientMemo : ingredient.ingredient_memo
+    });
+
+});
+
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
 };
@@ -152,5 +188,9 @@ const checkIngredientCount = (count) => {
     }
     return s === 0;
 };
+
+const findByIngredientId = async (id) => {
+    return await Ingredient.findByPk(id);
+}
 
 module.exports = router;
