@@ -184,7 +184,7 @@ router.delete('/:group_id', async (req, res) => {
         const ingredient = await findByIngredientId(ingredientId);
         if (ingredient === null) {
             return res.status(404).send({
-                message: ingredientId+'에 해당하는 식재료를 찾을 수 없습니다.'
+                message: ingredientId + '에 해당하는 식재료를 찾을 수 없습니다.'
             });
         }
 
@@ -205,6 +205,101 @@ router.delete('/:group_id', async (req, res) => {
     return res.status(200).send({
         message: '식재료들이 삭제되었습니다.'
     })
+});
+
+//식재료 수정
+router.put('/:group_id/:ingredient_id', [
+    check('ingredientName', 'Name is empty').trim().not().isEmpty(),
+    check('ingredientSaveType', 'Save type is empty').trim().not().isEmpty(),
+    check('ingredientPurchaseDate', 'Purchase date is empty').trim().not().isEmpty(),
+    check('ingredientExpirationDate', 'Expiration date is empty').trim().not().isEmpty(),
+    check('ingredientCount', 'Count is empty').trim().not().isEmpty(),
+    check('ingredientPurchaseDate', 'Date format is not valid').trim().isDate(),
+    check('ingredientExpirationDate', 'Date format is not valid').trim().isDate(),
+], async (req, res) => {
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const ingredientId = req.params.ingredient_id;
+    const ingredient = await findByIngredientId(ingredientId);
+    if (ingredient === null) {
+        return res.status(404).send({
+            message: '해당하는 식재료를 찾을 수 없습니다.'
+        });
+    }
+
+    if (ingredient.group_id !== groupId) {
+        return res.status(404).send({
+            message: '그룹 안에 해당하는 식재료가 없습니다.'
+        });
+    }
+
+    const {
+        ingredientName,
+        ingredientSaveType,
+        ingredientPurchaseDate,
+        ingredientExpirationDate,
+        ingredientCategory,
+        ingredientCount,
+        ingredientMemo
+    } = req.body;
+
+    if (!validEnum(IngredientCategory, ingredientCategory)) {
+        return res.status(404).send({
+            message: 'category에 해당하는 값이 없습니다.'
+        });
+    }
+
+    if (!validEnum(IngredientSaveType, ingredientSaveType)) {
+        return res.status(404).send({
+            message: 'save type에 해당하는 값이 없습니다.'
+        });
+    }
+
+    if (!checkIngredientCount(ingredientCount)) {
+        try {
+            await Ingredient.destroy({
+                where: {ingredient_id: ingredientId}
+            });
+
+            return res.status(200).send({
+                message: '식재료가 삭제되었습니다.'
+            })
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    await Ingredient.update(
+        {
+            ingredient_name: ingredientName,
+            ingredient_save_type: ingredientSaveType,
+            ingredient_purchase_date: ingredientPurchaseDate,
+            ingredient_expiration_date: ingredientExpirationDate,
+            ingredient_category: ingredientCategory,
+            ingredient_count: ingredientCount,
+            ingredient_memo: ingredientMemo
+        },
+        {
+            where: {ingredient_id: ingredientId}
+        }
+    )
+
+    return res.status(200).send({
+        message: '식재료가 수정되었습니다.'
+    });
 });
 
 const validEnum = (e, d) => {

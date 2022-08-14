@@ -153,6 +153,66 @@
         }
       }
     },
+    "/groups/ingredients/{group_id}/{ingredient_id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ingredient_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ingredientName": {
+                  "example": "any"
+                },
+                "ingredientSaveType": {
+                  "example": "any"
+                },
+                "ingredientPurchaseDate": {
+                  "example": "any"
+                },
+                "ingredientExpirationDate": {
+                  "example": "any"
+                },
+                "ingredientCategory": {
+                  "example": "any"
+                },
+                "ingredientCount": {
+                  "example": "any"
+                },
+                "ingredientMemo": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/groups/quests/{group_id}/{user_id}": {
       "post": {
         "description": "",
