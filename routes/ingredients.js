@@ -157,15 +157,54 @@ router.get('/:group_id/details/:ingredient_id', async (req, res) => {
     }
 
     return res.status(200).json({
-        ingredientName : ingredient.ingredient_name,
-        ingredientSaveType : ingredient.ingredient_save_type,
-        ingredientPurchaseDate : ingredient.ingredient_purchase_date,
-        ingredientExpirationDate : ingredient.ingredient_expiration_date,
-        ingredientCategory : ingredient.ingredient_category,
-        ingredientCount : ingredient.ingredient_count,
-        ingredientMemo : ingredient.ingredient_memo
+        ingredientName: ingredient.ingredient_name,
+        ingredientSaveType: ingredient.ingredient_save_type,
+        ingredientPurchaseDate: ingredient.ingredient_purchase_date,
+        ingredientExpirationDate: ingredient.ingredient_expiration_date,
+        ingredientCategory: ingredient.ingredient_category,
+        ingredientCount: ingredient.ingredient_count,
+        ingredientMemo: ingredient.ingredient_memo
     });
 
+});
+
+//식재료 삭제
+router.delete('/:group_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const ingredients = req.body;
+    for (let i = 0; i < ingredients.length; i++) {
+        const ingredientId = ingredients[i].ingredientId;
+        const ingredient = await findByIngredientId(ingredientId);
+        if (ingredient === null) {
+            return res.status(404).send({
+                message: ingredientId+'에 해당하는 식재료를 찾을 수 없습니다.'
+            });
+        }
+
+        if (ingredient.group_id !== groupId) {
+            return res.status(404).send({
+                message: `그룹에 해당하는 ${ingredientId} 식재료가 없습니다.`
+            })
+        }
+
+        try {
+            await Ingredient.destroy({
+                where: {ingredient_id: ingredientId}
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    }
+    return res.status(200).send({
+        message: '식재료들이 삭제되었습니다.'
+    })
 });
 
 const validEnum = (e, d) => {

@@ -93,6 +93,37 @@
             "description": "Conflict"
           }
         }
+      },
+      "delete": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "length": {
+                  "example": "any"
+                }
+              }
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
       }
     },
     "/groups/ingredients/{group_id}/details/{ingredient_id}": {
