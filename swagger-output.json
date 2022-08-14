@@ -95,6 +95,33 @@
         }
       }
     },
+    "/groups/ingredients/{group_id}/details/{ingredient_id}": {
+      "get": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ingredient_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          }
+        }
+      }
+    },
     "/groups/quests/{group_id}/{user_id}": {
       "post": {
         "description": "",
