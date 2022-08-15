@@ -56,7 +56,7 @@ router.post('/:group_id', [
         });
     }
 
-    if (!checkIngredientCount(req.body.ingredientCount)) {
+    if (checkIngredientCount(req.body.ingredientCount)) {
         return res.status(409).send({
             message: '식재료의 수가 0입니다.'
         });
@@ -179,8 +179,8 @@ router.delete('/:group_id', async (req, res) => {
     }
 
     const ingredients = req.body;
-    for (let i = 0; i < ingredients.length; i++) {
-        const ingredientId = ingredients[i].ingredientId;
+    for (let i of ingredients) {
+        const ingredientId = i.ingredientId;
         const ingredient = await findByIngredientId(ingredientId);
         if (ingredient === null) {
             return res.status(404).send({
@@ -268,7 +268,7 @@ router.put('/:group_id/:ingredient_id', [
         });
     }
 
-    if (!checkIngredientCount(ingredientCount)) {
+    if (checkIngredientCount(ingredientCount)) {
         try {
             await Ingredient.destroy({
                 where: {ingredient_id: ingredientId}
@@ -302,6 +302,58 @@ router.put('/:group_id/:ingredient_id', [
     });
 });
 
+//식재료 개수 일괄 수정
+router.put('/:group_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const ingredients = req.body;
+    for (let i of ingredients) {
+        const ingredientId = i.ingredientId * 1;
+        const ingredient = await findByIngredientId(ingredientId);
+        if (ingredient === null) {
+            return res.status(404).send({
+                message: ingredientId + '에 해당하는 식재료를 찾을 수 없습니다.'
+            });
+        }
+
+        if (ingredient.group_id !== groupId) {
+            return res.status(404).send({
+                message: `그룹에 해당하는 ${ingredientId} 식재료가 없습니다.`
+            })
+        }
+
+        const ingredientCount = i.ingredientCount;
+        if (checkIngredientCount(ingredientCount)) {
+            try {
+                await Ingredient.destroy({
+                    where: {ingredient_id: ingredientId}
+                });
+            } catch (e) {
+                console.error(e);
+            }
+        }
+
+        await Ingredient.update(
+            {
+                ingredient_count: ingredientCount
+            },
+            {
+                where: {ingredient_id: ingredientId}
+            }
+        );
+    }
+
+    return res.status(200).send({
+        message: '식재료의 개수가 수정되었습니다.'
+    });
+});
+
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
 };
@@ -315,10 +367,13 @@ const findByGroupId = async (id) => {
 };
 
 const checkIngredientCount = (count) => {
-    let list = new Array(count);
+    let list = [];
+    for (let i of count) {
+        list.push(i);
+    }
     let s = 0;
     for (let i of list) {
-        if (!isNaN(i * 1)) s += i + 1;
+        if (!isNaN(i * 1) && i * 1 !== 0) s++;
     }
     return s === 0;
 };
