@@ -222,36 +222,123 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
 });
 
 //심부름 상세 조회
-router.get('/:group_id/details/:quest_id', async (req, res)=>{
-    const groupId = req.params.group_id*1;
+router.get('/:group_id/details/:quest_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
     const group = await findByGroupId(groupId);
-    if(group === null){
+    if (group === null) {
         return res.status(404).send({
-            message : '해당하는 그룹을 찾을 수 없습니다.'
+            message: '해당하는 그룹을 찾을 수 없습니다.'
         });
     }
 
     const questId = req.params.quest_id;
     const quest = await findByQuestId(questId);
-    if(quest === null){
+    if (quest === null) {
         return res.status(404).send({
-            message : '해당하는 심부름을 찾을 수 없습니다.'
+            message: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if(quest.group_id !== groupId){
+    if (quest.group_id !== groupId) {
         return res.status(404).send({
-            message : '그룹에 해당하는 심부름이 없습니다.'
+            message: '그룹에 해당하는 심부름이 없습니다.'
         });
     }
 
     return res.status(200).json({
-        requestUserId : quest.request_user_id,
-        questTitle : quest.quest_title,
-        questContent : quest.quest_content,
-        questCreatedDate : quest.createdAt,
-        completeCheck : quest.complete_check,
-        acceptUserId : quest.accept_user_id
+        requestUserId: quest.request_user_id,
+        questTitle: quest.quest_title,
+        questContent: quest.quest_content,
+        questCreatedDate: quest.createdAt,
+        completeCheck: quest.complete_check,
+        acceptUserId: quest.accept_user_id
+    });
+});
+
+//심부름 수락 및 수락 취소
+router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const questId = req.params.quest_id * 1;
+    const quest = await findByQuestId(questId);
+    if (quest === null) {
+        return res.status(404).send({
+            message: '해당하는 심부름을 찾을 수 없습니다.'
+        });
+    }
+
+    if (quest.group_id !== groupId) {
+        return res.status(404).send({
+            message: '그룹에 해당하는 심부름이 없습니다.'
+        });
+    }
+
+    if (quest.complete_check) {
+        return res.status(409).send({
+            message: '이미 해결된 심부름입니다.'
+        });
+    }
+
+    const acceptorId = req.params.acceptor_id * 1;
+    const acceptor = await findByUserId(acceptorId);
+    if (acceptor === null) {
+        return res.status(404).send({
+            message: '심부름 수락자를 찾을 수 없습니다.'
+        });
+    }
+
+    if (quest.request_user_id === acceptorId) {
+        return res.status(409).send({
+            message: '퀘스트 생성자는 수락 또는 취소가 불가능합니다.'
+        });
+    }
+
+    if(acceptor.group_id !== groupId){
+        return res.status(404).send({
+            message : '그룹에 해당하는 수락자를 찾을 수 없습니다.'
+        })
+    }
+
+    if (quest.accept_user_id === -1) {
+        try {
+            await Quest.update(
+                {
+                    accept_user_id: acceptorId
+                },
+                {
+                    where: {quest_id: questId}
+                }
+            );
+        } catch (e) {
+            console.error(e);
+        }
+        return res.status(200).send({
+            message: '퀘스트가 수락되었습니다.'
+        });
+    }
+    if (quest.accept_user_id !== acceptorId) {
+        return res.status(409).send({
+            message: '퀘스트 취소는 수락자만 가능합니다.'
+        });
+    }
+
+    await Quest.update(
+        {
+            accept_user_id: -1
+        },
+        {
+            where: {quest_id: questId}
+        }
+    );
+
+    return res.status(200).send({
+        message: '퀘스트가 취소되었습니다.'
     });
 });
 
