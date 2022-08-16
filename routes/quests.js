@@ -395,7 +395,7 @@ router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
     try {
         await Quest.update(
             {
-                quest_complete_check: true
+                complete_check: true
             },
             {
                 where: {quest_id: questId}
