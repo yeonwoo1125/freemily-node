@@ -441,6 +441,42 @@
         }
       }
     },
+    "/groups/quests/{group_id}/{quest_id}/complete/{requester_id}": {
+      "put": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "quest_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "requester_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "409": {
+            "description": "Conflict"
+          }
+        }
+      }
+    },
     "/groups/chores/{group_id}/{user_id}": {
       "post": {
         "description": "",

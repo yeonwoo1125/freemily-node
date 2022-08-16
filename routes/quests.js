@@ -299,9 +299,9 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
         });
     }
 
-    if(acceptor.group_id !== groupId){
+    if (acceptor.group_id !== groupId) {
         return res.status(404).send({
-            message : '그룹에 해당하는 수락자를 찾을 수 없습니다.'
+            message: '그룹에 해당하는 수락자를 찾을 수 없습니다.'
         })
     }
 
@@ -340,6 +340,74 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
     return res.status(200).send({
         message: '퀘스트가 취소되었습니다.'
     });
+});
+
+//심부름 성공 처리
+router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const questId = req.params.quest_id * 1;
+    const quest = await findByQuestId(questId);
+    if (quest === null) {
+        return res.status(404).send({
+            message: '해당하는 심부름을 찾을 수 없습니다.'
+        });
+    }
+
+    if (quest.group_id !== groupId) {
+        return res.status(404).send({
+            message: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
+        });
+    }
+
+    if (quest.accept_user_id === -1) {
+        return res.status(409).send({
+            message: '심부름의 수락자가 없습니다.'
+        });
+    }
+
+    if (quest.complete_check) {
+        return res.status(409).send({
+            message: '이미 완료한 심부름입니다.'
+        });
+    }
+
+    const requesterId = req.params.requester_id * 1;
+    const requester = await findByUserId(requesterId);
+    if (requester === null) {
+        return res.status(404).send({
+            message: '그룹에 해당하는 요청자를 찾을 수 없습니다.'
+        });
+    }
+
+    if (quest.request_user_id !== requesterId) {
+        return res.status(409).send({
+            message: '심부름 완료 요청은 생성자만 가능합니다.'
+        });
+    }
+
+    try {
+        await Quest.update(
+            {
+                quest_complete_check: true
+            },
+            {
+                where: {quest_id: questId}
+            }
+        );
+    } catch (e) {
+        console.error(e);
+    }
+
+    return res.status(200).send({
+        message: '심부름이 완료되었습니다.'
+    })
 });
 
 const validRequest = (error) => {
