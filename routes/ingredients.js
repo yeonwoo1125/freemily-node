@@ -63,13 +63,13 @@ router.post('/:group_id', [
     }
 
     if (!validEnum(IngredientCategory, req.body.ingredientCategory)) {
-        return res.status(404).send({
+        return res.status(400).send({
             message: 'category에 해당하는 값이 없습니다.'
         });
     }
 
     if (!validEnum(IngredientSaveType, req.body.ingredientSaveType)) {
-        return res.status(404).send({
+        return res.status(400).send({
             message: 'save type에 해당하는 값이 없습니다.'
         });
     }
@@ -257,13 +257,13 @@ router.put('/:group_id/:ingredient_id', [
     } = req.body;
 
     if (!validEnum(IngredientCategory, ingredientCategory)) {
-        return res.status(404).send({
+        return res.status(400).send({
             message: 'category에 해당하는 값이 없습니다.'
         });
     }
 
     if (!validEnum(IngredientSaveType, ingredientSaveType)) {
-        return res.status(404).send({
+        return res.status(400).send({
             message: 'save type에 해당하는 값이 없습니다.'
         });
     }
