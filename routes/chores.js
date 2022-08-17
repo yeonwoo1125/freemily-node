@@ -228,15 +228,91 @@ router.delete('/:group_id/:chore_id', async (req, res) => {
 
     try {
         await Chore.destroy({
-            where : {chore_id : choreId}
+            where: {chore_id: choreId}
         });
 
         return res.status(200).send({
-            message : '집안일이 삭제되었습니다.'
+            message: '집안일이 삭제되었습니다.'
         })
     } catch (e) {
         console.error(e);
     }
+});
+
+//당번 인증 요청에 대한 응답
+router.put('/:group_id/:chore_id/reaction', [
+    check('reaction', 'Reaction is empty').trim().not().isEmpty()
+], async (req, res) => {
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const groupId = req.params.group_id * 1;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹을 찾을 수 없습니다.'
+        });
+    }
+
+    const choreId = req.params.chore_id * 1;
+    const chore = await findByChoreId(choreId);
+    if (chore === null) {
+        return res.status(404).send({
+            message: '해당하는 집안일을 찾을 수 없습니다.'
+        });
+    }
+
+    if (chore.group_id !== groupId) {
+        return res.status(404).send({
+            message: '그룹에 해당하는 집안일이 없습니다.'
+        });
+    }
+
+    switch (chore.chore_check) {
+        case ChoreCheck.BEFORE : {
+            return res.status(409).send({
+                message: '인증 요청되지 않은 집안일입니다.'
+            });
+        }
+        case ChoreCheck.SUCCESS : {
+            return res.status(409).send({
+                message: '이미 성공한 집안일입니다.'
+            });
+        }
+        case ChoreCheck.FAIL : {
+            return res.status(409).send({
+                message: '이미 실패한 집안일입니다.'
+            });
+        }
+    }
+
+    const check = req.body.reaction;
+    if (!validEnum(ChoreCheck, check)) {
+        return res.status(400).send({
+            message: 'Check에 해당하는 값이 없습니다.'
+        });
+    }
+
+    try {
+        await Chore.update(
+            {
+                chore_check: check
+            },
+            {
+                where: {chore_id: choreId}
+            }
+        );
+    } catch (e) {
+        console.error(e);
+    }
+
+    return res.status(200).send({
+        message: '집안일이 완료되었습니다.'
+    })
 });
 
 const validEnum = (e, d) => {
