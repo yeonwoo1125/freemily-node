@@ -199,7 +199,7 @@ router.delete('/:user_id', [
     bcrypt.compare(password, user.user_password, (err, same) => {
         if (!same) {
             return res.status(401).send({
-                message: '비밀번호가 틀렸습니다.'
+                message: '비밀번호가 일치하지 않습니다.'
             });
         }
     });
@@ -252,12 +252,75 @@ router.put('/:user_id', [
 
         user = await findByUserId(userId);
         return res.status(200).send({
-            userName : user.user_name,
-            userNickname : user.user_nickname
+            userName: user.user_name,
+            userNickname: user.user_nickname
         });
     } catch (e) {
         console.error(e);
     }
+});
+
+//유저 비밀번호 변경
+router.put('/:user_id/password', [
+    check('userPassword', 'Password is empty').trim().not().isEmpty(),
+    check('userNewPassword', 'New password is empty').trim().not().isEmpty(),
+    check('userNewPasswordCheck', 'New password check is empty').trim().not().isEmpty(),
+    check('userNewPassword', 'New password is too short').trim().isLength({min: 8})
+], async (req, res) => {
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        console.log(err);
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id * 1;
+    const user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: '해당하는 유저를 찾을 수 없습니다.'
+        });
+    }
+
+    const {userPassword, userNewPassword, userNewPasswordCheck} = req.body;
+    if (userPassword === userNewPassword) {
+        return res.status(409).send({
+            message: '비밀번호가 변경되지 않았습니다.'
+        });
+    }
+
+    const same = await bcrypt.compare(userPassword, user.user_password);
+    if (!same) {
+        return res.status(401).send({
+            message: '비밀번호가 일치하지 않습니다.'
+        });
+    }
+
+    if (userNewPassword !== userNewPasswordCheck) {
+        return res.status(409).send({
+            message: '새로운 비밀번호가 일치하지 않습니다.'
+        });
+    }
+    const salt = 12;
+    const hashPw = await bcrypt.hash(userNewPassword, salt);
+
+    try {
+        await User.update(
+            {
+                user_password: hashPw
+            },
+            {
+                where: {user_id: userId}
+            }
+        );
+    } catch (e) {
+        console.error(e);
+    }
+
+    return res.status(200).send({
+        message: '비밀번호가 변경되었습니다.'
+    });
 });
 
 
