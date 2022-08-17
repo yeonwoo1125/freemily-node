@@ -61,7 +61,7 @@ router.post('/:group_id/:user_id', [
 
     let {choreTitle, choreCategory, choreDate, choreUserId} = req.body;
     if (!validEnum(ChoreCategory, choreCategory)) {
-        return res.status(404).send({
+        return res.status(400).send({
             message: 'enum에 없는 값입니다.'
         });
     }
