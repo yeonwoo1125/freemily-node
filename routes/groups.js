@@ -146,7 +146,7 @@ router.post('/join/:user_id', [
     try {
         await User.update({group_id: group.group_id}, {where: {user_id: userId}, returning: true});
 
-        const user = await getUser(userId);
+        const user = await findByUserId(userId);
         return res.status(200).send({
             "userName": user.user_name, "userNickname": user.user_nickname, "userEmail": user.user_email
         });
