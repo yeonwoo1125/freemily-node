@@ -318,7 +318,7 @@ router.put('/:group_id/:chore_id/reaction', [
 
 //당번 한달 목록
 router.get('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id;
+    const groupId = req.params.group_id * 1;
     const group = await findByGroupId(groupId);
     if (group === null) {
         return res.status(404).send({
