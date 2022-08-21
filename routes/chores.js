@@ -5,6 +5,7 @@ const {validationResult, check} = require("express-validator");
 const moment = require("moment");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
+const sequelize = require('../models/index').sequelize;
 
 const ChoreCategory = {
     DISH_WASHING: 'DISH_WASHING',
@@ -176,7 +177,7 @@ router.get('/:group_id/one-day', async (req, res) => {
     }
 
     const date = req.query.date;
-    if (!checkDateFormat(date)) {
+    if (!checkDateFormat(date, 'YYYY-MM-DD')) {
         return res.status(400).send({
             message: '날짜 형식이 올바르지 않습니다.'
         });
@@ -315,6 +316,41 @@ router.put('/:group_id/:chore_id/reaction', [
     })
 });
 
+//당번 한달 목록
+router.get('/:group_id', async (req, res) => {
+    const groupId = req.params.group_id;
+    const group = await findByGroupId(groupId);
+    if (group === null) {
+        return res.status(404).send({
+            message: '해당하는 그룹이 없습니다.'
+        });
+    }
+
+    const date = new Date(req.query.date);
+    if (!checkDateFormat(date, 'YYYY-MM')) {
+        return res.status(400).send({
+            message: '날짜 형식이 올바르지 않습니다.'
+        });
+    }
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    try {
+        const list = await Chore.findAll({
+            attributes: [['chore_id', 'choreId'], ['chore_user_id', 'choreUserId'],
+                ['chore_title', 'choreTitle'], ['chore_category', 'choreCategory'], ['chore_date', 'choreDate']],
+            where: {
+                group_id: groupId,
+                Op: sequelize.where(sequelize.fn('year', sequelize.col('chore_date')), '=', year),
+                andOp: sequelize.where(sequelize.fn('month', sequelize.col('chore_date')), '=', month),
+            }
+        });
+        return res.status(200).json(list);
+    } catch (e) {
+        console.error(e);
+    }
+
+});
+
 const validEnum = (e, d) => {
     return Object.values(e).includes(d);
 };
@@ -346,8 +382,8 @@ const findByChoreId = async (id) => {
     return await Chore.findByPk(id);
 }
 
-const checkDateFormat = (date) => {
-    return moment(date, 'YYYY-MM-DD').isValid();
+const checkDateFormat = (date, format) => {
+    return moment(date, format).isValid();
 }
 
 module.exports = router;
