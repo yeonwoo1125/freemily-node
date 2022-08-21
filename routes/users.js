@@ -1,4 +1,4 @@
-const Users = require('../models/user');
+const User = require('../models/user');
 const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
 const bcrypt = require('bcrypt');
@@ -12,46 +12,46 @@ router.post('/',
         check('userName', 'Name is too short').trim().isLength({min: 4})
     ],
     async (req, res, next) => {
-    /*
-      #swagger.tags = ['User']
-      #swagger.description = '유저 생성 POST 요청'
-      #swagger.parameters['obj'] = {
-                in: 'body',
-                description: '유저 생성 정보',
+        /*
+          #swagger.tags = ['User']
+          #swagger.description = '유저 생성 POST 요청'
+          #swagger.parameters['obj'] = {
+                    in: 'body',
+                    description: '유저 생성 정보',
+                    schema: {
+                        userName: 'Hello',
+                        userNickname : 'Hi',
+                        userEmail: 'hehe@naver.com',
+                        userPassword : 'mypassword11'
+                    }
+          }
+          #swagger.responses[201] = {
+                description: '그룹 생성',
                 schema: {
-                    userName: 'Hello',
+                    userId : 1,
+                    userName : 'Hello',
                     userNickname : 'Hi',
-                    userEmail: 'hehe@naver.com',
-                    userPassword : 'mypassword11'
+                    userEmail : 'hehe@naver.com'
                 }
-      }
-      #swagger.responses[201] = {
-            description: '그룹 생성',
-            schema: {
-                userId : 1,
-                userName : 'Hello',
-                userNickname : 'Hi',
-                userEmail : 'hehe@naver.com'
-            }
-      }
-      #swagger.responses[400] = {
-            description : '잘못된 request 형식',
-            schema : {
-                message : [
-                    'Email format is not valid',
-                    'Email is empty',
-                    'Password is too short',
-                    'Name is too short'
-                ]
-            }
-      }
-        #swagger.responses[409] = {
-            description : '이미 가입한 이메일',
-            schema : {
-                message : 'Email is already use'
-            }
-      }
-     */
+          }
+          #swagger.responses[400] = {
+                description : '잘못된 request 형식',
+                schema : {
+                    message : [
+                        'Email format is not valid',
+                        'Email is empty',
+                        'Password is too short',
+                        'Name is too short'
+                    ]
+                }
+          }
+            #swagger.responses[409] = {
+                description : '이미 가입한 이메일',
+                schema : {
+                    message : 'Email is already use'
+                }
+          }
+         */
         const err = validationResult(req);
         if (validRequest(err)) {
             console.log(err);
@@ -62,7 +62,7 @@ router.post('/',
 
         if (await findByEmail(req.body.userEmail)) {
             return res.status(409).send({
-                message: 'Email is already use'
+                message: '이미 가입한 이메일입니다.'
             });
         }
 
@@ -71,7 +71,7 @@ router.post('/',
         const hashPw = await bcrypt.hash(password, salt);
 
         try {
-            const user = await Users.create({
+            const user = await User.create({
                 user_name: req.body.userName,
                 user_nickname: req.body.userNickname,
                 user_email: req.body.userEmail,
@@ -148,14 +148,14 @@ router.post('/login', [
 
     if (!await findByEmail(userEmail)) {
         return res.status(404).send({
-            message: 'Email not found'
+            message: '해당하는 이메일을 찾을 수 없습니다.'
         });
     }
 
-    const user = await getUser(userEmail);
+    const user = await findByUserEmail(userEmail);
     if (user.group_id === null) {
         return res.status(404).send({
-            message: 'User not join group'
+            message: '유저가 해당하는 그룹에 존재하지 않습니다.'
         });
     }
 
@@ -169,27 +169,180 @@ router.post('/login', [
             });
         } else {
             return res.status(403).send({
-                message: 'Email and password mismatch'
+                message: '이메일과 비밀번호가 일치하지 않습니다.'
             })
         }
     });
 })
+
+//유저 탈퇴
+router.delete('/:user_id', [
+    check('userPassword', 'Password is empty').trim().not().isEmpty()
+], async (req, res) => {
+
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id;
+    const user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: '해당하는 유저를 찾을 수 없습니다.'
+        });
+    }
+
+    const password = req.body.userPassword;
+    bcrypt.compare(password, user.user_password, (err, same) => {
+        if (!same) {
+            return res.status(401).send({
+                message: '비밀번호가 일치하지 않습니다.'
+            });
+        }
+    });
+
+    try {
+        await User.destroy({
+            where: {user_id: userId}
+        });
+        return res.status(200).send({
+            message: '유저가 삭제되었습니다.'
+
+        });
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+//유저 정보 수정
+router.put('/:user_id', [
+    check('userName', 'Name is empty').trim().not().isEmpty()
+], async (req, res) => {
+
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id;
+    let user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: '해당하는 유저를 찾을 수 없습니다.'
+        });
+    }
+
+    const name = req.body.userName;
+    const nickname = req.body.userNickname;
+    try {
+        await User.update(
+            {
+                user_name: name,
+                user_nickname: nickname
+            },
+            {
+                where: {user_id: userId}
+            }
+        );
+
+        user = await findByUserId(userId);
+        return res.status(200).send({
+            userName: user.user_name,
+            userNickname: user.user_nickname
+        });
+    } catch (e) {
+        console.error(e);
+    }
+});
+
+//유저 비밀번호 변경
+router.put('/:user_id/password', [
+    check('userPassword', 'Password is empty').trim().not().isEmpty(),
+    check('userNewPassword', 'New password is empty').trim().not().isEmpty(),
+    check('userNewPasswordCheck', 'New password check is empty').trim().not().isEmpty(),
+    check('userNewPassword', 'New password is too short').trim().isLength({min: 8})
+], async (req, res) => {
+    const err = validationResult(req);
+    if (validRequest(err)) {
+        console.log(err);
+        return res.status(400).send({
+            message: err.array()[0].msg,
+        });
+    }
+
+    const userId = req.params.user_id * 1;
+    const user = await findByUserId(userId);
+    if (user === null) {
+        return res.status(404).send({
+            message: '해당하는 유저를 찾을 수 없습니다.'
+        });
+    }
+
+    const {userPassword, userNewPassword, userNewPasswordCheck} = req.body;
+    if (userPassword === userNewPassword) {
+        return res.status(409).send({
+            message: '비밀번호가 변경되지 않았습니다.'
+        });
+    }
+
+    const same = await bcrypt.compare(userPassword, user.user_password);
+    if (!same) {
+        return res.status(401).send({
+            message: '비밀번호가 일치하지 않습니다.'
+        });
+    }
+
+    if (userNewPassword !== userNewPasswordCheck) {
+        return res.status(409).send({
+            message: '새로운 비밀번호가 일치하지 않습니다.'
+        });
+    }
+    const salt = 12;
+    const hashPw = await bcrypt.hash(userNewPassword, salt);
+
+    try {
+        await User.update(
+            {
+                user_password: hashPw
+            },
+            {
+                where: {user_id: userId}
+            }
+        );
+    } catch (e) {
+        console.error(e);
+    }
+
+    return res.status(200).send({
+        message: '비밀번호가 변경되었습니다.'
+    });
+});
+
 
 const validRequest = (error) => {
     return !error.isEmpty();
 }
 
 const findByEmail = async (email) => {
-    const user = await Users.findAll({
+    const user = await User.findAll({
         where: {user_email: email}
     });
     return user.length !== 0;
 }
 
-const getUser = async (email) => {
-    return await Users.findOne({
+const findByUserEmail = async (email) => {
+    return await User.findOne({
         where: {user_email: email}
     });
+}
+
+const findByUserId = async (id) => {
+    return await User.findByPk(id);
 }
 
 module.exports = router;
