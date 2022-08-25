@@ -34,62 +34,62 @@ router.post('/:group_id/:user_id', [
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const userId = req.params.user_id * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
-    if (user.group_id !== groupId) {
+    if (!User.userNotInGroup(user, groupId)) {
         return res.status(404).send({
-            message: '해당 그룹에 유저가 가입하지 않았습니다.'
+            msg: '그룹 안에 해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     let {choreTitle, choreCategory, choreDate, choreUserId} = req.body;
     if (!validEnum(ChoreCategory, choreCategory)) {
         return res.status(400).send({
-            message: 'enum에 없는 값입니다.'
+            msg: 'enum에 없는 값입니다.'
         });
     }
 
-    const choreUser = await findByUserId(choreUserId);
-    if (choreUser === null) {
+    const choreUser = await User.findByUserId(choreUserId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '집안일을 하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (choreUser.group_id !== groupId) {
         return res.status(404).send({
-            message: '집안일을 하는 유저가 해당하는 그룹에 가입하지 않았습니다.'
+            msg: '집안일을 하는 유저가 해당하는 그룹에 가입하지 않았습니다.'
         });
     }
 
     choreDate = new Date(choreDate);
     if (choreDate < Date.now()) {
         return res.status(409).send({
-            message: '이미 집안일 날짜가 지났습니다.'
+            msg: '이미 집안일 날짜가 지났습니다.'
         });
     }
 
     if (await checkChore(choreCategory, choreDate, choreUserId)) {
         return res.status(409).send({
-            message: '이미 생성된 심부름입니다.'
+            msg: '이미 생성된 심부름입니다.'
         })
     }
 
@@ -112,36 +112,36 @@ router.post('/:group_id/:user_id', [
 //당번 인증 요청 보내기
 router.put('/:group_id/:chore_id/certify', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const choreId = req.params.chore_id * 1;
-    let chore = await findByChoreId(choreId);
-    if (chore === null) {
+    let chore = await Chore.findByChoreId(choreId);
+    if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
-            message: '해당하는 집안일을 찾을 수 없습니다.'
+            msg: '해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
-    if (groupId !== chore.group_id) {
+    if (!Chore.choreNotInGroup(chore, groupId)) {
         return res.status(404).send({
-            message: '집안일이 해당 그룹에 없습니다.'
+            msg: '그룹에 해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
     if (chore.chore_check === ChoreCheck.SUCCESS || chore.chore_check === ChoreCheck.REQUEST) {
         return res.status(409).send({
-            message: '이미 인증 요청된 집안일입니다.'
+            msg: '이미 인증 요청된 집안일입니다.'
         })
     }
 
     if (chore.chore_check === ChoreCheck.FAIL) {
         return res.status(409).send({
-            message: '이미 실패한 집안일입니다.'
+            msg: '이미 실패한 집안일입니다.'
         })
     }
 
@@ -155,10 +155,10 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
             }
         );
 
-        chore = await findByChoreId(choreId);
+        chore = await Chore.findByChoreId(choreId);
         if (chore.chore_check === ChoreCheck.REQUEST) {
             return res.status(200).send({
-                message: '집안일 인증 요청이 완료되었습니다.'
+                msg: '집안일 인증 요청이 완료되었습니다.'
             });
         }
     } catch (e) {
@@ -169,17 +169,17 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
 //당번 하루 목록
 router.get('/:group_id/one-day', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const date = req.query.date;
     if (!checkDateFormat(date, 'YYYY-MM-DD')) {
         return res.status(400).send({
-            message: '날짜 형식이 올바르지 않습니다.'
+            msg: '날짜 형식이 올바르지 않습니다.'
         });
     }
 
@@ -188,7 +188,9 @@ router.get('/:group_id/one-day', async (req, res) => {
             where: {
                 group_id: groupId,
                 chore_date: date
-            }
+            },
+            attributes: [['chore_id', 'choreId'], ['chore_user_id', 'choreUserId'], ['chore_title', 'choreTitle'],
+                ['chore_category', 'choreCategory'], ['createdAt', 'createdDate'], ['updatedAt', 'modifiedDate']]
         });
 
         return res.status(200).json(chores);
@@ -200,30 +202,30 @@ router.get('/:group_id/one-day', async (req, res) => {
 //당번 삭제
 router.delete('/:group_id/:chore_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const choreId = req.params.chore_id * 1;
-    let chore = await findByChoreId(choreId);
-    if (chore === null) {
+    let chore = await Chore.findByChoreId(choreId);
+    if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
-            message: '해당하는 집안일을 찾을 수 없습니다.'
+            msg: '해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
-    if (groupId !== chore.group_id) {
+    if (!Chore.choreNotInGroup(chore, groupId)) {
         return res.status(404).send({
-            message: '집안일이 해당 그룹에 존재하지 않습니다.'
+            msg: '그룹에 해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
     if (chore.chore_check === ChoreCheck.FAIL || chore.chore_check === ChoreCheck.SUCCESS) {
         return res.status(405).send({
-            message: '이미 완료한 집안일입니다.'
+            msg: '이미 완료한 집안일입니다.'
         });
     }
 
@@ -233,60 +235,60 @@ router.delete('/:group_id/:chore_id', async (req, res) => {
         });
 
         return res.status(200).send({
-            message: '집안일이 삭제되었습니다.'
+            msg: '집안일이 삭제되었습니다.'
         })
     } catch (e) {
         console.error(e);
     }
 });
 
-//당번 인증 요청에 대한 응답
+//인증 요청에 대한 응답
 router.put('/:group_id/:chore_id/reaction', [
     check('reaction', 'Reaction is empty').trim().not().isEmpty()
 ], async (req, res) => {
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const choreId = req.params.chore_id * 1;
-    const chore = await findByChoreId(choreId);
-    if (chore === null) {
+    const chore = await Chore.findByChoreId(choreId);
+    if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
-            message: '해당하는 집안일을 찾을 수 없습니다.'
+            msg: '해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
-    if (chore.group_id !== groupId) {
+    if (!Chore.choreNotInGroup(chore, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 집안일이 없습니다.'
+            msg: '그룹에 해당하는 집안일을 찾을 수 없습니다.'
         });
     }
 
     switch (chore.chore_check) {
         case ChoreCheck.BEFORE : {
             return res.status(409).send({
-                message: '인증 요청되지 않은 집안일입니다.'
+                msg: '인증 요청되지 않은 집안일입니다.'
             });
         }
         case ChoreCheck.SUCCESS : {
             return res.status(409).send({
-                message: '이미 성공한 집안일입니다.'
+                msg: '이미 성공한 집안일입니다.'
             });
         }
         case ChoreCheck.FAIL : {
             return res.status(409).send({
-                message: '이미 실패한 집안일입니다.'
+                msg: '이미 실패한 집안일입니다.'
             });
         }
     }
@@ -294,7 +296,7 @@ router.put('/:group_id/:chore_id/reaction', [
     const check = req.body.reaction;
     if (!validEnum(ChoreCheck, check)) {
         return res.status(400).send({
-            message: 'Check에 해당하는 값이 없습니다.'
+            msg: 'Check에 해당하는 값이 없습니다.'
         });
     }
 
@@ -312,28 +314,29 @@ router.put('/:group_id/:chore_id/reaction', [
     }
 
     return res.status(200).send({
-        message: '집안일이 완료되었습니다.'
+        msg: '집안일이 완료되었습니다.'
     })
 });
 
 //당번 한달 목록
 router.get('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹이 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const date = new Date(req.query.date);
     if (!checkDateFormat(date, 'YYYY-MM')) {
         return res.status(400).send({
-            message: '날짜 형식이 올바르지 않습니다.'
+            msg: '날짜 형식이 올바르지 않습니다.'
         });
     }
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
+
     try {
         const list = await Chore.findAll({
             attributes: [['chore_id', 'choreId'], ['chore_user_id', 'choreUserId'],
@@ -348,7 +351,6 @@ router.get('/:group_id', async (req, res) => {
     } catch (e) {
         console.error(e);
     }
-
 });
 
 const validEnum = (e, d) => {
@@ -357,14 +359,6 @@ const validEnum = (e, d) => {
 
 const validRequest = (error) => {
     return !error.isEmpty();
-};
-
-const findByGroupId = async (id) => {
-    return await Group.findByPk(id);
-};
-
-const findByUserId = async (id) => {
-    return await User.findByPk(id);
 };
 
 const checkChore = async (category, date, id) => {
@@ -376,10 +370,6 @@ const checkChore = async (category, date, id) => {
         }
     });
     return chore !== null;
-}
-
-const findByChoreId = async (id) => {
-    return await Chore.findByPk(id);
 }
 
 const checkDateFormat = (date, format) => {

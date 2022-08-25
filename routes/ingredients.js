@@ -2,6 +2,7 @@ const Group = require('../models/group');
 const Ingredient = require('../models/ingredient');
 const {validationResult, check} = require("express-validator");
 const moment = require('moment');
+const {In} = require("nunjucks/src/nodes");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
 
@@ -44,33 +45,33 @@ router.post('/:group_id', [
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     if (checkIngredientCount(req.body.ingredientCount)) {
         return res.status(409).send({
-            message: '식재료의 수가 0입니다.'
+            msg: '식재료의 수가 0입니다.'
         });
     }
 
     if (!validEnum(IngredientCategory, req.body.ingredientCategory)) {
         return res.status(400).send({
-            message: 'category에 해당하는 값이 없습니다.'
+            msg: 'category에 해당하는 값이 없습니다.'
         });
     }
 
     if (!validEnum(IngredientSaveType, req.body.ingredientSaveType)) {
         return res.status(400).send({
-            message: 'save type에 해당하는 값이 없습니다.'
+            msg: 'save type에 해당하는 값이 없습니다.'
         });
     }
 
@@ -97,10 +98,10 @@ router.post('/:group_id', [
 //식재료 전체 조회
 router.get('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
@@ -109,7 +110,7 @@ router.get('/:group_id', async (req, res) => {
     if (saveType) {
         if (!validEnum(IngredientSaveType, saveType)) {
             return res.status(409).send({
-                message: 'save type에 없는 값입니다.'
+                msg: 'save type에 없는 값입니다.'
             });
         }
         saveType_attr[Op.eq] = saveType;
@@ -118,9 +119,9 @@ router.get('/:group_id', async (req, res) => {
     try {
         const ingredients = await Ingredient.findAll({
             attributes: [
-                'ingredient_id', 'ingredient_name', 'ingredient_save_type',
-                'ingredient_category', 'ingredient_expiration_date',
-                'ingredient_purchase_date', 'ingredient_count'
+                ['ingredient_id', 'ingredientId'], ['ingredient_name', 'ingredientName'], ['ingredient_save_type', 'ingredientSaveType'],
+                ['ingredient_category', 'ingredientCategory'], ['ingredient_expiration_date', 'ingredientExpirationDate'],
+                ['ingredient_purchase_date', 'ingredientPurchaseDate'], ['ingredient_count', 'ingredientCount']
             ],
             where: {
                 'ingredient_save_type': saveType_attr
@@ -135,62 +136,59 @@ router.get('/:group_id', async (req, res) => {
 //식재료 상세 조회
 router.get('/:group_id/details/:ingredient_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const ingredientId = req.params.ingredient_id * 1;
-    const ingredient = await findByIngredientId(ingredientId);
-    if (ingredient === null) {
+    let ingredient = await Ingredient.findByIngredientId(ingredientId);
+    if (!Ingredient.ingredientNotFound(ingredient)) {
         return res.status(404).send({
-            message: '해당하는 식재료를 찾을 수 없습니다.'
+            msg: '해당하는 식재료를 찾을 수 없습니다.'
         });
     }
 
-    if (ingredient.group_id !== groupId) {
+    if (!Ingredient.ingredientNotInGroup(ingredient, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 식재료가 없습니다.'
+            msg: '그룹에 해당하는 식재료를 찾을 수 없습니다.'
         })
     }
 
-    return res.status(200).json({
-        ingredientName: ingredient.ingredient_name,
-        ingredientSaveType: ingredient.ingredient_save_type,
-        ingredientPurchaseDate: ingredient.ingredient_purchase_date,
-        ingredientExpirationDate: ingredient.ingredient_expiration_date,
-        ingredientCategory: ingredient.ingredient_category,
-        ingredientCount: ingredient.ingredient_count,
-        ingredientMemo: ingredient.ingredient_memo
+    ingredient = await Ingredient.findByPk(ingredientId, {
+        attributes: [['ingredient_name', 'ingredientName'], ['ingredient_save_type', 'ingredientSaveType'], ['ingredient_purchase_date', 'ingredientPurchaseDate'],
+            ['ingredient_expiration_date', 'ingredientExpirationDate'], ['ingredient_category', 'ingredientCategory'],
+            ['ingredient_count', 'ingredientCount'], ['ingredient_memo', 'ingredientMemo']]
     });
 
+    return res.status(200).json(ingredient);
 });
 
 //식재료 삭제
 router.delete('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const ingredients = req.body;
     for (let i of ingredients) {
         const ingredientId = i.ingredientId;
-        const ingredient = await findByIngredientId(ingredientId);
-        if (ingredient === null) {
+        const ingredient = await Ingredient.findByIngredientId(ingredientId);
+        if (!Ingredient.ingredientNotFound(ingredient)) {
             return res.status(404).send({
-                message: ingredientId + '에 해당하는 식재료를 찾을 수 없습니다.'
+                msg: '해당하는 식재료를 찾을 수 없습니다.'
             });
         }
 
-        if (ingredient.group_id !== groupId) {
+        if (!Ingredient.ingredientNotInGroup(ingredient, groupId)) {
             return res.status(404).send({
-                message: `그룹에 해당하는 ${ingredientId} 식재료가 없습니다.`
+                msg: '그룹에 해당하는 식재료를 찾을 수 없습니다.'
             })
         }
 
@@ -203,7 +201,7 @@ router.delete('/:group_id', async (req, res) => {
         }
     }
     return res.status(200).send({
-        message: '식재료들이 삭제되었습니다.'
+        msg: '식재료들이 삭제되었습니다.'
     })
 });
 
@@ -220,30 +218,30 @@ router.put('/:group_id/:ingredient_id', [
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const ingredientId = req.params.ingredient_id;
-    const ingredient = await findByIngredientId(ingredientId);
-    if (ingredient === null) {
+    let ingredient = await Ingredient.findByIngredientId(ingredientId);
+    if (!Ingredient.ingredientNotFound(ingredient)) {
         return res.status(404).send({
-            message: '해당하는 식재료를 찾을 수 없습니다.'
+            msg: '해당하는 식재료를 찾을 수 없습니다.'
         });
     }
 
-    if (ingredient.group_id !== groupId) {
+    if (!Ingredient.ingredientNotInGroup(ingredient, groupId)) {
         return res.status(404).send({
-            message: '그룹 안에 해당하는 식재료가 없습니다.'
-        });
+            msg: '그룹에 해당하는 식재료를 찾을 수 없습니다.'
+        })
     }
 
     const {
@@ -258,13 +256,13 @@ router.put('/:group_id/:ingredient_id', [
 
     if (!validEnum(IngredientCategory, ingredientCategory)) {
         return res.status(400).send({
-            message: 'category에 해당하는 값이 없습니다.'
+            msg: 'category에 해당하는 값이 없습니다.'
         });
     }
 
     if (!validEnum(IngredientSaveType, ingredientSaveType)) {
         return res.status(400).send({
-            message: 'save type에 해당하는 값이 없습니다.'
+            msg: 'save type에 해당하는 값이 없습니다.'
         });
     }
 
@@ -275,7 +273,7 @@ router.put('/:group_id/:ingredient_id', [
             });
 
             return res.status(200).send({
-                message: '식재료가 삭제되었습니다.'
+                msg: '식재료가 삭제되었습니다.'
             })
         } catch (e) {
             console.error(e);
@@ -297,34 +295,38 @@ router.put('/:group_id/:ingredient_id', [
         }
     )
 
-    return res.status(200).send({
-        message: '식재료가 수정되었습니다.'
+    ingredient = await Ingredient.findByPk(ingredientId, {
+        attributes: [['ingredient_name', 'ingredientName'], ['ingredient_save_type', 'ingredientSaveType'], ['ingredient_purchase_date', 'ingredientPurchaseDate'],
+            ['ingredient_expiration_date', 'ingredientExpirationDate'], ['ingredient_category', 'ingredientCategory'],
+            ['ingredient_count', 'ingredientCount'], ['ingredient_memo', 'ingredientMemo']]
     });
+
+    return res.status(200).json(ingredient);
 });
 
 //식재료 개수 일괄 수정
 router.put('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const ingredients = req.body;
     for (let i of ingredients) {
         const ingredientId = i.ingredientId * 1;
-        const ingredient = await findByIngredientId(ingredientId);
-        if (ingredient === null) {
+        const ingredient = await Ingredient.findByIngredientId(ingredientId);
+        if (!Ingredient.ingredientNotFound(ingredient)) {
             return res.status(404).send({
-                message: ingredientId + '에 해당하는 식재료를 찾을 수 없습니다.'
+                msg: '해당하는 식재료를 찾을 수 없습니다.'
             });
         }
 
-        if (ingredient.group_id !== groupId) {
+        if (!Ingredient.ingredientNotInGroup(ingredient, groupId)) {
             return res.status(404).send({
-                message: `그룹에 해당하는 ${ingredientId} 식재료가 없습니다.`
+                msg: '그룹에 해당하는 식재료를 찾을 수 없습니다.'
             })
         }
 
@@ -350,7 +352,7 @@ router.put('/:group_id', async (req, res) => {
     }
 
     return res.status(200).send({
-        message: '식재료의 개수가 수정되었습니다.'
+        msg: '식재료의 개수가 수정되었습니다.'
     });
 });
 
@@ -360,10 +362,6 @@ const validEnum = (e, d) => {
 
 const validRequest = (error) => {
     return !error.isEmpty();
-};
-
-const findByGroupId = async (id) => {
-    return await Group.findByPk(id);
 };
 
 const checkIngredientCount = (count) => {
@@ -377,9 +375,5 @@ const checkIngredientCount = (count) => {
     }
     return s === 0;
 };
-
-const findByIngredientId = async (id) => {
-    return await Ingredient.findByPk(id);
-}
 
 module.exports = router;

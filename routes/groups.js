@@ -7,7 +7,7 @@ const Op = require('sequelize').Op;
 //그룹 생성
 router.post('/:user_id', [
     check("groupName", "Group name is too short").trim().isLength({min: 4})
-], async (req, res, next) => {
+], async (req, res) => {
     /*
       #swagger.tags = ['Group']
       #swagger.description = '그룹 생성 POST 요청'
@@ -23,40 +23,40 @@ router.post('/:user_id', [
       #swagger.responses[400] = {
             description : '그룹 이름이 3글자 이상이어야 함',
             schema : {
-                message : 'Group name is too short'
+                msg : 'Group name is too short'
             }
       }
       #swagger.responses[404] = {
             description : '유저를 찾을 수 없음',
             schema : {
-                message : 'User not found'
+                msg : 'User not found'
             }
       }
       #swagger.responses[409] = {
             description : '유저가 이미 그룹에 가입함',
             schema : {
-                message : 'User already join in group'
+                msg : 'User already join in group'
             }
       }
      */
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const userId = req.params.user_id * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== null) {
         return res.status(409).send({
-            message: '이미 그룹에 가입한 유저입니다.'
+            msg: '이미 그룹에 가입한 유저입니다.'
         });
     }
 
@@ -69,7 +69,6 @@ router.post('/:user_id', [
         return res.status(201).json(group);
     } catch (err) {
         console.error(err);
-        next(err);
     }
 });
 
@@ -98,58 +97,59 @@ router.post('/join/:user_id', [
       #swagger.responses[400] = {
             description : '그룹 초대 코드가 비었음',
             schema : {
-                message : 'Group invite code is empty'
+                msg : 'Group invite code is empty'
             }
       }
       #swagger.responses[404] = {
             description : '유저를 찾을 수 없음',
             schema : {
-                message : 'User not found'
+                msg : 'User not found'
             }
       }
       #swagger.responses[409] = {
             description : '유저가 이미 그룹에 가입함',
             schema : {
-                message : 'User already join in group'
+                msg : 'User already join in group'
             }
       }
      */
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const userId = req.params.user_id * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (user.group_id !== null) {
         return res.status(409).send({
-            message: '이미 그룹에 가입한 유저입니다.'
+            msg: '이미 그룹에 가입한 유저입니다.'
         });
     }
 
     const groupInviteCode = req.body.groupInviteCode;
-    const group = await findByGroupCode(groupInviteCode);
-    if (group === null) {
+    const group = await Group.findByInviteCode(groupInviteCode);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     try {
         await User.update({group_id: group.group_id}, {where: {user_id: userId}, returning: true});
 
-        const user = await findByUserId(userId);
-        return res.status(200).send({
-            "userName": user.user_name, "userNickname": user.user_nickname, "userEmail": user.user_email
-        });
+        const user = await User.findByPk(userId, {
+                attributes: [['user_name', 'userName'], ['user_nickname', 'userNickname'], ['user_email', 'userEmail']]
+            }
+        );
+        return res.status(200).json(user);
 
     } catch (e) {
         console.error(e);
@@ -177,41 +177,41 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     #swagger.responses[404] = {
           description : '그룹이나 유저를 찾을 수 없음',
           schema : {
-              message : '[Group not found] or [User not found]'
+              msg : '[Group not found] or [User not found]'
           }
     }
       #swagger.responses[409] = {
           description : '유저가 해당하는 그룹에 없음',
           schema : {
-              message : 'User is not joined to this group'
+              msg : 'User is not joined to this group'
           }
     }
    */
 
     const userId = req.params.user_id * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
-
-    if (user.group_id !== groupId) {
-        return res.status(409).send({
-            message: '유저가 해당하는 그룹에 가입하지 않았습니다.'
+    if (!User.userNotInGroup(user, groupId)) {
+        return res.status(404).send({
+            msg: '그룹 안에 해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     const users = await User.findAll({
-        attributes: ['user_id'], where: {
+        attributes: ['user_id'],
+        where: {
             group_id: groupId, [Op.not]: {user_id: userId}
         }
     });
@@ -226,15 +226,15 @@ router.put('/:group_id/report', [
     const err = validationResult(req);
     if (validRequest(err)) {
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    let group = await findByGroupId(groupId);
-    if (group === null) {
+    let group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
@@ -243,14 +243,14 @@ router.put('/:group_id/report', [
         await Group.update(
             {
                 group_report: groupReport
-            },{
-                where : {group_id : groupId}
+            }, {
+                where: {group_id: groupId}
             }
         );
-        group = await findByGroupId(groupId);
-        return res.status(200).send({
-            groupReport : group.group_report
+        group = await Group.findByPk(groupId, {
+            attributes: [['group_report', 'groupReport']]
         });
+        return res.status(200).json(group);
     } catch (e) {
         console.error(e);
     }
@@ -269,15 +269,6 @@ const createGroupInviteCode = async () => {
         ranCode = code;
     } while ((await findByGroupCode(ranCode) !== null));
     return ranCode;
-}
-
-
-const findByUserId = async (id) => {
-    return await User.findByPk(id);
-}
-
-const findByGroupId = async (id) => {
-    return await Group.findByPk(id);
 }
 
 const findByGroupCode = async (code) => {

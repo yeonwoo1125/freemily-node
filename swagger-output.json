@@ -790,7 +790,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "array",
                   "example": [
                     "Email format is not valid",
@@ -813,7 +813,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "Email is already use"
                 }
@@ -885,7 +885,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "[Email format is not valid] or [Password is empty]"
                 }
@@ -900,7 +900,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "Email and password mismatch"
                 }
@@ -915,7 +915,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "[Email not found] or [User not join group]"
                 }
@@ -981,10 +981,10 @@
             "schema": {
               "type": "object",
               "properties": {
-                "userName": {
+                "name": {
                   "example": "any"
                 },
-                "userNickname": {
+                "nickname": {
                   "example": "any"
                 }
               }
@@ -1140,7 +1140,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "Group name is too short"
                 }
@@ -1155,7 +1155,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "User not found"
                 }
@@ -1170,7 +1170,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "User already join in group"
                 }
@@ -1240,7 +1240,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "Group invite code is empty"
                 }
@@ -1255,7 +1255,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "User not found"
                 }
@@ -1270,7 +1270,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "User already join in group"
                 }
@@ -1327,7 +1327,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "[Group not found] or [User not found]"
                 }
@@ -1342,7 +1342,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "message": {
+                "msg": {
                   "type": "string",
                   "example": "User is not joined to this group"
                 }
