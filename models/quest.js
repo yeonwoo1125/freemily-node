@@ -44,6 +44,18 @@ class Quest extends Sequelize.Model {
         db.Quest.belongsTo(db.Group, {foreignKey: 'group_id', targetKey: 'group_id'});
         db.Quest.belongsTo(db.User, {foreignKey: 'request_user_id', targetKey: 'user_id'});
     }
+
+    static async findByQuestId(id) {
+        return await this.findByPk(id);
+    }
+
+    static questNotFound(quest) {
+        return quest !== null;
+    }
+
+    static questNotInGroup(quest, groupId) {
+        return quest.group_id === groupId;
+    }
 }
 
 module.exports = Quest;

@@ -10,17 +10,17 @@ const sequelize = require('../models/index').sequelize;
 
 router.get('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const date = new Date(req.query.date);
     if (!validDateFormat(date)) {
         return res.status(400).send({
-            message: '날짜 형식이 올바르지 않습니다.'
+            msg: '날짜 형식이 올바르지 않습니다.'
         });
     }
 
@@ -50,14 +50,14 @@ router.get('/:group_id', async (req, res) => {
             ]
         });
 
-        for(let i of list){
-            if(!choreMap.has(i.category)){
+        for (let i of list) {
+            if (!choreMap.has(i.category)) {
                 choreMap.set(i.category, i);
             }
-            if(choreMap.size === 3) break;
+            if (choreMap.size === 3) break;
         }
-        if(choreMap.size !== 0){
-            for(let i of choreMap.values()){
+        if (choreMap.size !== 0) {
+            for (let i of choreMap.values()) {
                 choreKing.push(i);
             }
         }
@@ -67,7 +67,7 @@ router.get('/:group_id', async (req, res) => {
         king.questKing = await Quest.findOne({
             attributes: [[sequelize.fn('count', '*'), 'count'], ['accept_user_id', 'userId']],
             group: ['accept_user_id'],
-            raw : true,
+            raw: true,
             where: {
                 group_id: groupId,
                 complete_check: true,
@@ -82,10 +82,6 @@ router.get('/:group_id', async (req, res) => {
         console.error(e);
     }
 });
-
-const findByGroupId = async (id) => {
-    return await Group.findByPk(id);
-}
 
 const validDateFormat = (date) => {
     return moment(date, 'YYYY-MM').isValid();

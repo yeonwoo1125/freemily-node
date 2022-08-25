@@ -14,28 +14,29 @@ router.post('/:group_id/:user_id', [
     if (validRequest(err)) {
         console.log(err);
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const userId = req.params.user_id * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
-    if (user.group_id !== groupId) {
+
+    if (!User.userNotInGroup(user, groupId)) {
         return res.status(404).send({
-            message: '유저가 해당하는 그룹에 가입하지 않았습니다.'
+            msg: '그룹 안에 해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
@@ -50,6 +51,7 @@ router.post('/:group_id/:user_id', [
             accept_user_id: -1
         });
 
+
         return res.status(201).send({
             'questId': quest.quest_id,
             'questTitle': quest.quest_title,
@@ -63,18 +65,18 @@ router.post('/:group_id/:user_id', [
 //심부름 목록 조회
 router.get('/:group_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     try {
         const quests = await Quest.findAll({
             attributes: [
-                'quest_id', 'request_user_id', 'quest_title',
-                'quest_content', 'complete_check', 'accept_user_id'
+                ['quest_id', 'questId'], ['request_user_id', 'requestUserId'], ['quest_title', 'questTitle'],
+                ['quest_content', 'questContent'], ['complete_check', 'completeCheck'], ['accept_user_id', 'acceptUserId']
             ],
             where: {group_id: groupId}
         });
@@ -92,57 +94,56 @@ router.put('/:group_id/:quest_id', [
 ], async (req, res) => {
     const err = validationResult(req);
     if (validRequest(err)) {
-        console.log(err);
         return res.status(400).send({
-            message: err.array()[0].msg,
+            msg: err.array()[0].msg,
         });
     }
 
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const questId = req.params.quest_id * 1;
-    let quest = await findByQuestId(questId);
-    if (quest === null) {
+    let quest = await Quest.findByQuestId(questId);
+    if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
-            message: '해당하는 심부름을 찾을 수 없습니다.'
+            msg: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if (quest.group_id !== groupId) {
+    if (!Quest.questNotInGroup(quest, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 심부름이 없습니다.'
-        })
+            msg: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
+        });
     }
 
     const userId = req.query.requesterId * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
-    if (user.group_id !== groupId) {
+    if (!User.userNotInGroup(user, groupId)) {
         return res.status(404).send({
-            message: '유저가 해당하는 그룹에 존재하지 않습니다.'
-        })
+            msg: '그룹 안에 해당하는 유저를 찾을 수 없습니다.'
+        });
     }
 
     if (quest.request_user_id !== userId) {
         return res.status(409).send({
-            message: '심부름을 생성한 유저만 수정할 수 있습니다.'
+            msg: '심부름을 생성한 유저만 수정할 수 있습니다.'
         })
     }
 
     if (quest.accept_user_id !== -1) {
         return res.status(405).send({
-            message: '이미 수락자가 있는 심부름입니다.'
+            msg: '이미 수락자가 있는 심부름입니다.'
         })
     }
 
@@ -157,58 +158,54 @@ router.put('/:group_id/:quest_id', [
         }
     )
 
-    quest = await findByQuestId(questId);
-    return res.status(200).json({
-        requestUserId: quest.request_user_id,
-        questTitle: quest.quest_title,
-        questContent: quest.quest_content,
-        questModifiedDate: quest.updatedAt,
-        completeCheck: quest.complete_check,
-        acceptUserId: quest.accept_user_id
+    quest = await Quest.findByPk(questId, {
+        attributes: [['request_user_id', 'requestUserId'], ['quest_title', 'questTitle'], ['quest_content', 'questContent'], ['updatedAt', 'questModifiedDate'],
+            ['complete_check', 'completeCheck'], ['accept_user_id', 'acceptUserId']]
     });
+    return res.status(200).json(quest);
 });
 
 //심부름 삭제
 router.delete('/:group_id/:quest_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const questId = req.params.quest_id * 1;
-    const quest = await findByQuestId(questId);
-    if (quest === null) {
+    const quest = await Quest.findByQuestId(questId);
+    if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
-            message: '해당하는 심부름을 찾을 수 없습니다.'
+            msg: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if (quest.group_id !== groupId) {
+    if (!Quest.questNotInGroup(quest, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 심부름이 없습니다.'
-        })
+            msg: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
+        });
     }
 
     const userId = req.query.userId * 1;
-    const user = await findByUserId(userId);
-    if (user === null) {
+    const user = await User.findByUserId(userId);
+    if (!User.userNotFound(user)) {
         return res.status(404).send({
-            message: '해당하는 유저를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (quest.request_user_id !== userId) {
         return res.status(409).send({
-            message: '심부름을 생성한 유저만 삭제할 수 있습니다.'
+            msg: '심부름을 생성한 유저만 삭제할 수 있습니다.'
         })
     }
 
     if (quest.accept_user_id !== -1) {
         return res.status(405).send({
-            message: '이미 수락자가 있는 심부름입니다.'
+            msg: '이미 수락자가 있는 심부름입니다.'
         })
     }
 
@@ -217,92 +214,90 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
     });
 
     return res.status(200).send({
-        message: '심부름이 삭제되었습니다.'
-    })
+        msg: '심부름이 삭제되었습니다.'
+    });
 });
 
 //심부름 상세 조회
 router.get('/:group_id/details/:quest_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const questId = req.params.quest_id;
-    const quest = await findByQuestId(questId);
-    if (quest === null) {
+    let quest = await Quest.findByQuestId(questId);
+    if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
-            message: '해당하는 심부름을 찾을 수 없습니다.'
+            msg: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if (quest.group_id !== groupId) {
+    if (!Quest.questNotInGroup(quest, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 심부름이 없습니다.'
+            msg: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    return res.status(200).json({
-        requestUserId: quest.request_user_id,
-        questTitle: quest.quest_title,
-        questContent: quest.quest_content,
-        questCreatedDate: quest.createdAt,
-        completeCheck: quest.complete_check,
-        acceptUserId: quest.accept_user_id
+    quest = await Quest.findByPk(questId, {
+        attributes: [['request_user_id', 'requestUserId'], ['quest_title', 'questTitle'], ['quest_content', 'questContent'], ['createdAt', 'questCreatedDate'],
+            ['complete_check', 'completeCheck'], ['accept_user_id', 'acceptUserId']]
     });
+
+    return res.status(200).json(quest);
 });
 
 //심부름 수락 및 수락 취소
 router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const questId = req.params.quest_id * 1;
-    const quest = await findByQuestId(questId);
-    if (quest === null) {
+    const quest = await Quest.findByQuestId(questId);
+    if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
-            message: '해당하는 심부름을 찾을 수 없습니다.'
+            msg: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if (quest.group_id !== groupId) {
+    if (!Quest.questNotInGroup(quest, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 심부름이 없습니다.'
+            msg: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
     if (quest.complete_check) {
         return res.status(409).send({
-            message: '이미 해결된 심부름입니다.'
+            msg: '이미 해결된 심부름입니다.'
         });
     }
 
     const acceptorId = req.params.acceptor_id * 1;
-    const acceptor = await findByUserId(acceptorId);
-    if (acceptor === null) {
+    const acceptor = await User.findByUserId(acceptorId);
+    if (!User.userNotFound(acceptor)) {
         return res.status(404).send({
-            message: '심부름 수락자를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (quest.request_user_id === acceptorId) {
         return res.status(409).send({
-            message: '퀘스트 생성자는 수락 또는 취소가 불가능합니다.'
+            msg: '퀘스트 생성자는 수락 또는 취소가 불가능합니다.'
         });
     }
 
-    if (acceptor.group_id !== groupId) {
+    if (!User.userNotInGroup(acceptor, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 수락자를 찾을 수 없습니다.'
-        })
+            msg: '그룹 안에 해당하는 유저를 찾을 수 없습니다.'
+        });
     }
 
     if (quest.accept_user_id === -1) {
@@ -319,12 +314,12 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
             console.error(e);
         }
         return res.status(200).send({
-            message: '퀘스트가 수락되었습니다.'
+            msg: '퀘스트가 수락되었습니다.'
         });
     }
     if (quest.accept_user_id !== acceptorId) {
         return res.status(409).send({
-            message: '퀘스트 취소는 수락자만 가능합니다.'
+            msg: '퀘스트 취소는 수락자만 가능합니다.'
         });
     }
 
@@ -338,57 +333,63 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
     );
 
     return res.status(200).send({
-        message: '퀘스트가 취소되었습니다.'
+        msg: '퀘스트가 취소되었습니다.'
     });
 });
 
 //심부름 성공 처리
 router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
     const groupId = req.params.group_id * 1;
-    const group = await findByGroupId(groupId);
-    if (group === null) {
+    const group = await Group.findByGroupId(groupId);
+    if (!Group.groupNotFound(group)) {
         return res.status(404).send({
-            message: '해당하는 그룹을 찾을 수 없습니다.'
+            msg: '해당하는 그룹이 없습니다.'
         });
     }
 
     const questId = req.params.quest_id * 1;
-    const quest = await findByQuestId(questId);
-    if (quest === null) {
+    const quest = await Quest.findByQuestId(questId);
+    if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
-            message: '해당하는 심부름을 찾을 수 없습니다.'
+            msg: '해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
-    if (quest.group_id !== groupId) {
+    if (!Quest.questNotInGroup(quest, groupId)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
+            msg: '그룹에 해당하는 심부름을 찾을 수 없습니다.'
         });
     }
 
     if (quest.accept_user_id === -1) {
         return res.status(409).send({
-            message: '심부름의 수락자가 없습니다.'
+            msg: '심부름의 수락자가 없습니다.'
         });
     }
 
     if (quest.complete_check) {
         return res.status(409).send({
-            message: '이미 완료한 심부름입니다.'
+            msg: '이미 완료한 심부름입니다.'
         });
     }
 
     const requesterId = req.params.requester_id * 1;
-    const requester = await findByUserId(requesterId);
-    if (requester === null) {
+    const requester = await User.findByUserId(requesterId);
+    if (!User.userNotFound(requester)) {
         return res.status(404).send({
-            message: '그룹에 해당하는 요청자를 찾을 수 없습니다.'
+            msg: '해당하는 유저를 찾을 수 없습니다.'
+        });
+    }
+
+    if (!User.userNotInGroup(requester, groupId)) {
+        return res.status(404).send({
+            msg: '그룹에 해당하는 유저를 찾을 수 없습니다.'
         });
     }
 
     if (quest.request_user_id !== requesterId) {
         return res.status(409).send({
-            message: '심부름 완료 요청은 생성자만 가능합니다.'
+            msg: '심부름 완료 요청은 생성자만 가능합니다.'
         });
     }
 
@@ -406,24 +407,12 @@ router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
     }
 
     return res.status(200).send({
-        message: '심부름이 완료되었습니다.'
+        msg: '심부름이 완료되었습니다.'
     })
 });
 
 const validRequest = (error) => {
     return !error.isEmpty();
-}
-
-const findByUserId = async (id) => {
-    return await User.findByPk(id);
-}
-
-const findByGroupId = async (id) => {
-    return await Group.findByPk(id);
-}
-
-const findByQuestId = async (id) => {
-    return await Quest.findByPk(id);
 }
 
 module.exports = router;
