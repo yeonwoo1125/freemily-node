@@ -11,12 +11,12 @@
     "http"
   ],
   "paths": {
-    "/groups/ingredients/{group_id}": {
+    "/groups/ingredients/{groupId}": {
       "post": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -71,7 +71,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -98,7 +98,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -117,7 +117,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -133,18 +133,18 @@
         }
       }
     },
-    "/groups/ingredients/{group_id}/details/{ingredient_id}": {
+    "/groups/ingredients/{groupId}/details/{ingredientId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "ingredient_id",
+            "name": "ingredientId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -160,18 +160,18 @@
         }
       }
     },
-    "/groups/ingredients/{group_id}/{ingredient_id}": {
+    "/groups/ingredients/{groupId}/{ingredientId}": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "ingredient_id",
+            "name": "ingredientId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -220,18 +220,18 @@
         }
       }
     },
-    "/groups/quests/{group_id}/{user_id}": {
+    "/groups/quests/{groupId}/{userId}": {
       "post": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -265,12 +265,12 @@
         }
       }
     },
-    "/groups/quests/{group_id}": {
+    "/groups/quests/{groupId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -286,18 +286,18 @@
         }
       }
     },
-    "/groups/quests/{group_id}/{quest_id}": {
+    "/groups/quests/{groupId}/{questId}": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "quest_id",
+            "name": "questId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -345,13 +345,13 @@
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "quest_id",
+            "name": "questId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -378,18 +378,18 @@
         }
       }
     },
-    "/groups/quests/{group_id}/details/{quest_id}": {
+    "/groups/quests/{groupId}/details/{questId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "quest_id",
+            "name": "questId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -405,24 +405,24 @@
         }
       }
     },
-    "/groups/quests/{group_id}/{quest_id}/acceptor/{acceptor_id}": {
+    "/groups/quests/{groupId}/{questId}/acceptor/{acceptorId}": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "quest_id",
+            "name": "questId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "acceptor_id",
+            "name": "acceptorId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -441,24 +441,24 @@
         }
       }
     },
-    "/groups/quests/{group_id}/{quest_id}/complete/{requester_id}": {
+    "/groups/quests/{groupId}/{questId}/complete/{requesterId}": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "quest_id",
+            "name": "questId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "requester_id",
+            "name": "requesterId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -477,18 +477,18 @@
         }
       }
     },
-    "/groups/chores/{group_id}/{user_id}": {
+    "/groups/chores/{groupId}/{userId}": {
       "post": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -531,18 +531,18 @@
         }
       }
     },
-    "/groups/chores/{group_id}/{chore_id}/certify": {
+    "/groups/chores/{groupId}/{choreId}/certify": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "chore_id",
+            "name": "choreId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -561,12 +561,12 @@
         }
       }
     },
-    "/groups/chores/{group_id}/one-day": {
+    "/groups/chores/{groupId}/one-day": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -590,18 +590,18 @@
         }
       }
     },
-    "/groups/chores/{group_id}/{chore_id}": {
+    "/groups/chores/{groupId}/{choreId}": {
       "delete": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "chore_id",
+            "name": "choreId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -620,18 +620,18 @@
         }
       }
     },
-    "/groups/chores/{group_id}/{chore_id}/reaction": {
+    "/groups/chores/{groupId}/{choreId}/reaction": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "chore_id",
+            "name": "choreId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -665,12 +665,12 @@
         }
       }
     },
-    "/groups/chores/{group_id}": {
+    "/groups/chores/{groupId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -694,12 +694,12 @@
         }
       }
     },
-    "/groups/kings/{group_id}": {
+    "/groups/kings/{groupId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -928,12 +928,12 @@
         }
       }
     },
-    "/users/{user_id}": {
+    "/users/{userId}": {
       "delete": {
         "description": "",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -970,7 +970,7 @@
         "description": "",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1004,12 +1004,12 @@
         }
       }
     },
-    "/users/{user_id}/password": {
+    "/users/{userId}/password": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1052,12 +1052,12 @@
         }
       }
     },
-    "/users/details/{user_id}": {
+    "/users/details/{userId}": {
       "get": {
         "description": "",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1081,7 +1081,7 @@
         }
       }
     },
-    "/groups/{user_id}": {
+    "/groups/{userId}": {
       "post": {
         "tags": [
           "Group"
@@ -1089,7 +1089,7 @@
         "description": "그룹 생성 POST 요청",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1183,7 +1183,7 @@
         }
       }
     },
-    "/groups/join/{user_id}": {
+    "/groups/join/{userId}": {
       "post": {
         "tags": [
           "Group"
@@ -1191,7 +1191,7 @@
         "description": "그룹 가입 POST 요청",
         "parameters": [
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1283,7 +1283,7 @@
         }
       }
     },
-    "/groups/{group_id}/{user_id}": {
+    "/groups/{groupId}/{userId}": {
       "get": {
         "tags": [
           "Group"
@@ -1291,13 +1291,13 @@
         "description": "그룹 멤버(본인 제외) 조회 GET 요청",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
           },
           {
-            "name": "user_id",
+            "name": "userId",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1355,12 +1355,12 @@
         }
       }
     },
-    "/groups/{group_id}/report": {
+    "/groups/{groupId}/report": {
       "put": {
         "description": "",
         "parameters": [
           {
-            "name": "group_id",
+            "name": "groupId",
             "in": "path",
             "required": true,
             "type": "string"
