@@ -5,7 +5,7 @@ const router = require('express').Router();
 const Op = require('sequelize').Op;
 
 //그룹 생성
-router.post('/:user_id', [
+router.post('/:userId', [
     check("groupName", "Group name is too short").trim().isLength({min: 4})
 ], async (req, res) => {
     /*
@@ -46,7 +46,7 @@ router.post('/:user_id', [
         });
     }
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -73,7 +73,7 @@ router.post('/:user_id', [
 });
 
 //그룹 가입
-router.post('/join/:user_id', [
+router.post('/join/:userId', [
     check('groupInviteCode', 'Group invite code is empty').trim().not().isEmpty()
 ], async (req, res) => {
     /*
@@ -120,7 +120,7 @@ router.post('/join/:user_id', [
         });
     }
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -157,7 +157,7 @@ router.post('/join/:user_id', [
 });
 
 //그룹 멤버 조회
-router.get('/:group_id/:user_id', async (req, res, next) => {
+router.get('/:groupId/:userId', async (req, res, next) => {
     /*
     #swagger.tags = ['Group']
     #swagger.description = '그룹 멤버(본인 제외) 조회 GET 요청'
@@ -188,7 +188,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
     }
    */
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -196,7 +196,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -219,7 +219,7 @@ router.get('/:group_id/:user_id', async (req, res, next) => {
 });
 
 //그룹 공지 등록
-router.put('/:group_id/report', [
+router.put('/:groupId/report', [
     check('groupReport', 'Report is empty').trim().not().isEmpty(),
     check('groupReport', 'Report is too long').trim().isLength({max: 50})
 ], async (req, res) => {
@@ -230,7 +230,7 @@ router.put('/:group_id/report', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     let group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({

@@ -178,7 +178,7 @@ router.post('/login', [
 })
 
 //유저 탈퇴
-router.delete('/:user_id', [
+router.delete('/:userId', [
     check('userPassword', 'Password is empty').trim().not().isEmpty()
 ], async (req, res) => {
 
@@ -189,7 +189,7 @@ router.delete('/:user_id', [
         });
     }
 
-    const userId = req.params.user_id;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -198,7 +198,7 @@ router.delete('/:user_id', [
     }
 
     const password = req.body.userPassword;
-    const same =  await bcrypt.compare(password, user.user_password);
+    const same = await bcrypt.compare(password, user.user_password);
     if (!same) {
         return res.status(401).send({
             msg: '비밀번호가 일치하지 않습니다.'
@@ -219,7 +219,7 @@ router.delete('/:user_id', [
 });
 
 //유저 정보 수정
-router.put('/:user_id', [
+router.put('/:userId', [
     check('userName', 'Name is empty').trim().not().isEmpty()
 ], async (req, res) => {
 
@@ -230,7 +230,7 @@ router.put('/:user_id', [
         });
     }
 
-    const userId = req.params.user_id;
+    const userId = req.params.userId * 1;
     let user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -261,7 +261,7 @@ router.put('/:user_id', [
 });
 
 //유저 비밀번호 변경
-router.put('/:user_id/password', [
+router.put('/:userId/password', [
     check('userPassword', 'Password is empty').trim().not().isEmpty(),
     check('userNewPassword', 'New password is empty').trim().not().isEmpty(),
     check('userNewPasswordCheck', 'New password check is empty').trim().not().isEmpty(),
@@ -274,7 +274,7 @@ router.put('/:user_id/password', [
         });
     }
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -322,8 +322,8 @@ router.put('/:user_id/password', [
 });
 
 //유저 상세 조회
-router.get('/details/:user_id', async (req, res) => {
-    const userId = req.params.user_id * 1;
+router.get('/details/:userId', async (req, res) => {
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -337,7 +337,6 @@ router.get('/details/:user_id', async (req, res) => {
             msg: '날짜 형식이 올바르지 않습니다.'
         });
     }
-
 
     const year = date.getFullYear();
     const month = date.getMonth() + 1;

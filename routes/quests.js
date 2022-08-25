@@ -3,10 +3,9 @@ const User = require('../models/user');
 const Group = require('../models/group');
 const {validationResult, check} = require("express-validator");
 const router = require('express').Router();
-const Op = require('sequelize').Op;
 
 //심부름 생성
-router.post('/:group_id/:user_id', [
+router.post('/:groupId/:userId', [
     check("questTitle", "title is empty").trim().not().isEmpty(),
     check("questContent", "content is empty").trim().not().isEmpty()
 ], async (req, res) => {
@@ -18,7 +17,7 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -26,7 +25,7 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -63,8 +62,8 @@ router.post('/:group_id/:user_id', [
 });
 
 //심부름 목록 조회
-router.get('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -88,7 +87,7 @@ router.get('/:group_id', async (req, res) => {
 });
 
 //심부름 수정
-router.put('/:group_id/:quest_id', [
+router.put('/:groupId/:questId', [
     check("questTitle", "title is empty").trim().not().isEmpty(),
     check("questContent", "content is empty").trim().not().isEmpty()
 ], async (req, res) => {
@@ -99,7 +98,7 @@ router.put('/:group_id/:quest_id', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -107,7 +106,7 @@ router.put('/:group_id/:quest_id', [
         });
     }
 
-    const questId = req.params.quest_id * 1;
+    const questId = req.params.questId * 1;
     let quest = await Quest.findByQuestId(questId);
     if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
@@ -166,8 +165,8 @@ router.put('/:group_id/:quest_id', [
 });
 
 //심부름 삭제
-router.delete('/:group_id/:quest_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.delete('/:groupId/:questId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -175,7 +174,7 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
         });
     }
 
-    const questId = req.params.quest_id * 1;
+    const questId = req.params.questId * 1;
     const quest = await Quest.findByQuestId(questId);
     if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
@@ -219,8 +218,8 @@ router.delete('/:group_id/:quest_id', async (req, res) => {
 });
 
 //심부름 상세 조회
-router.get('/:group_id/details/:quest_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId/details/:questId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -228,7 +227,7 @@ router.get('/:group_id/details/:quest_id', async (req, res) => {
         });
     }
 
-    const questId = req.params.quest_id;
+    const questId = req.params.questId;
     let quest = await Quest.findByQuestId(questId);
     if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
@@ -251,8 +250,8 @@ router.get('/:group_id/details/:quest_id', async (req, res) => {
 });
 
 //심부름 수락 및 수락 취소
-router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.put('/:groupId/:questId/acceptor/:acceptorId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -260,7 +259,7 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
         });
     }
 
-    const questId = req.params.quest_id * 1;
+    const questId = req.params.questId * 1;
     const quest = await Quest.findByQuestId(questId);
     if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
@@ -280,7 +279,7 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
         });
     }
 
-    const acceptorId = req.params.acceptor_id * 1;
+    const acceptorId = req.params.acceptorId * 1;
     const acceptor = await User.findByUserId(acceptorId);
     if (!User.userNotFound(acceptor)) {
         return res.status(404).send({
@@ -338,8 +337,8 @@ router.put('/:group_id/:quest_id/acceptor/:acceptor_id', async (req, res) => {
 });
 
 //심부름 성공 처리
-router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.put('/:groupId/:questId/complete/:requesterId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -347,7 +346,7 @@ router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
         });
     }
 
-    const questId = req.params.quest_id * 1;
+    const questId = req.params.questId * 1;
     const quest = await Quest.findByQuestId(questId);
     if (!Quest.questNotFound(quest)) {
         return res.status(404).send({
@@ -373,7 +372,7 @@ router.put('/:group_id/:quest_id/complete/:requester_id', async (req, res) => {
         });
     }
 
-    const requesterId = req.params.requester_id * 1;
+    const requesterId = req.params.requesterId * 1;
     const requester = await User.findByUserId(requesterId);
     if (!User.userNotFound(requester)) {
         return res.status(404).send({

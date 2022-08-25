@@ -2,7 +2,6 @@ const Group = require('../models/group');
 const Ingredient = require('../models/ingredient');
 const {validationResult, check} = require("express-validator");
 const moment = require('moment');
-const {In} = require("nunjucks/src/nodes");
 const router = require('express').Router();
 const Op = require('sequelize').Op;
 
@@ -32,7 +31,7 @@ Object.freeze(IngredientCategory);
 
 
 //식재료 생성
-router.post('/:group_id', [
+router.post('/:groupId', [
     check('ingredientName', 'Name is empty').trim().not().isEmpty(),
     check('ingredientSaveType', 'Save type is empty').trim().not().isEmpty(),
     check('ingredientPurchaseDate', 'Purchase date is empty').trim().not().isEmpty(),
@@ -49,7 +48,7 @@ router.post('/:group_id', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -96,8 +95,8 @@ router.post('/:group_id', [
 });
 
 //식재료 전체 조회
-router.get('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -134,8 +133,8 @@ router.get('/:group_id', async (req, res) => {
 });
 
 //식재료 상세 조회
-router.get('/:group_id/details/:ingredient_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId/details/:ingredientId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -143,7 +142,7 @@ router.get('/:group_id/details/:ingredient_id', async (req, res) => {
         });
     }
 
-    const ingredientId = req.params.ingredient_id * 1;
+    const ingredientId = req.params.ingredientId * 1;
     let ingredient = await Ingredient.findByIngredientId(ingredientId);
     if (!Ingredient.ingredientNotFound(ingredient)) {
         return res.status(404).send({
@@ -167,8 +166,8 @@ router.get('/:group_id/details/:ingredient_id', async (req, res) => {
 });
 
 //식재료 삭제
-router.delete('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.delete('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -206,7 +205,7 @@ router.delete('/:group_id', async (req, res) => {
 });
 
 //식재료 수정
-router.put('/:group_id/:ingredient_id', [
+router.put('/:groupId/:ingredientId', [
     check('ingredientName', 'Name is empty').trim().not().isEmpty(),
     check('ingredientSaveType', 'Save type is empty').trim().not().isEmpty(),
     check('ingredientPurchaseDate', 'Purchase date is empty').trim().not().isEmpty(),
@@ -222,7 +221,7 @@ router.put('/:group_id/:ingredient_id', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -230,7 +229,7 @@ router.put('/:group_id/:ingredient_id', [
         });
     }
 
-    const ingredientId = req.params.ingredient_id;
+    const ingredientId = req.params.ingredientId;
     let ingredient = await Ingredient.findByIngredientId(ingredientId);
     if (!Ingredient.ingredientNotFound(ingredient)) {
         return res.status(404).send({
@@ -305,8 +304,8 @@ router.put('/:group_id/:ingredient_id', [
 });
 
 //식재료 개수 일괄 수정
-router.put('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.put('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({

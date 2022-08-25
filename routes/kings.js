@@ -8,8 +8,8 @@ const Op = require('sequelize').Op;
 const sequelize = require('../models/index').sequelize;
 
 
-router.get('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({

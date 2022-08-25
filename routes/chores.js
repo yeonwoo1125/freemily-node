@@ -4,7 +4,6 @@ const User = require("../models/user");
 const {validationResult, check} = require("express-validator");
 const moment = require("moment");
 const router = require('express').Router();
-const Op = require('sequelize').Op;
 const sequelize = require('../models/index').sequelize;
 
 const ChoreCategory = {
@@ -24,7 +23,7 @@ Object.freeze(ChoreCheck);
 
 
 //당번 생성
-router.post('/:group_id/:user_id', [
+router.post('/:groupId/:userId', [
     check('choreTitle', 'Title is empty').trim().not().isEmpty(),
     check('choreCategory', 'Category is empty').trim().not().isEmpty(),
     check('choreDate', 'Date format is not valid').trim().isDate(),
@@ -38,7 +37,7 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -46,7 +45,7 @@ router.post('/:group_id/:user_id', [
         });
     }
 
-    const userId = req.params.user_id * 1;
+    const userId = req.params.userId * 1;
     const user = await User.findByUserId(userId);
     if (!User.userNotFound(user)) {
         return res.status(404).send({
@@ -110,8 +109,8 @@ router.post('/:group_id/:user_id', [
 });
 
 //당번 인증 요청 보내기
-router.put('/:group_id/:chore_id/certify', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.put('/:groupId/:choreId/certify', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -119,7 +118,7 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
         });
     }
 
-    const choreId = req.params.chore_id * 1;
+    const choreId = req.params.choreId * 1;
     let chore = await Chore.findByChoreId(choreId);
     if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
@@ -167,8 +166,8 @@ router.put('/:group_id/:chore_id/certify', async (req, res) => {
 });
 
 //당번 하루 목록
-router.get('/:group_id/one-day', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId/one-day', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -200,8 +199,8 @@ router.get('/:group_id/one-day', async (req, res) => {
 });
 
 //당번 삭제
-router.delete('/:group_id/:chore_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.delete('/:groupId/:choreId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -209,7 +208,7 @@ router.delete('/:group_id/:chore_id', async (req, res) => {
         });
     }
 
-    const choreId = req.params.chore_id * 1;
+    const choreId = req.params.choreId * 1;
     let chore = await Chore.findByChoreId(choreId);
     if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
@@ -243,7 +242,7 @@ router.delete('/:group_id/:chore_id', async (req, res) => {
 });
 
 //인증 요청에 대한 응답
-router.put('/:group_id/:chore_id/reaction', [
+router.put('/:groupId/:choreId/reaction', [
     check('reaction', 'Reaction is empty').trim().not().isEmpty()
 ], async (req, res) => {
     const err = validationResult(req);
@@ -253,7 +252,7 @@ router.put('/:group_id/:chore_id/reaction', [
         });
     }
 
-    const groupId = req.params.group_id * 1;
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
@@ -261,7 +260,7 @@ router.put('/:group_id/:chore_id/reaction', [
         });
     }
 
-    const choreId = req.params.chore_id * 1;
+    const choreId = req.params.choreId * 1;
     const chore = await Chore.findByChoreId(choreId);
     if (!Chore.choreNotFound(chore)) {
         return res.status(404).send({
@@ -319,8 +318,8 @@ router.put('/:group_id/:chore_id/reaction', [
 });
 
 //당번 한달 목록
-router.get('/:group_id', async (req, res) => {
-    const groupId = req.params.group_id * 1;
+router.get('/:groupId', async (req, res) => {
+    const groupId = req.params.groupId * 1;
     const group = await Group.findByGroupId(groupId);
     if (!Group.groupNotFound(group)) {
         return res.status(404).send({
