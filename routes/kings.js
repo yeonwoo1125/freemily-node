@@ -28,7 +28,8 @@ router.get('/:group_id', async (req, res) => {
     const month = date.getMonth() + 1;
 
     const king = {};
-    let choreKing = [];
+    let choreMap = new Map();
+    const choreKing = [];
     try {
         const list = await Chore.findAll({
             attributes: [['chore_category', 'category'],
@@ -49,20 +50,24 @@ router.get('/:group_id', async (req, res) => {
             ]
         });
 
-        choreKing.push(list[0]);
-        for (let i of list) {
-            for (let j of choreKing) {
-                if (j.category !== i.category) {
-                    choreKing.push(i);
-                    break;
-                }
+        for(let i of list){
+            if(!choreMap.has(i.category)){
+                choreMap.set(i.category, i);
+            }
+            if(choreMap.size === 3) break;
+        }
+        if(choreMap.size !== 0){
+            for(let i of choreMap.values()){
+                choreKing.push(i);
             }
         }
+
         king.choreKing = choreKing;
 
         king.questKing = await Quest.findOne({
             attributes: [[sequelize.fn('count', '*'), 'count'], ['accept_user_id', 'userId']],
             group: ['accept_user_id'],
+            raw : true,
             where: {
                 group_id: groupId,
                 complete_check: true,
